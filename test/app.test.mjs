@@ -31,6 +31,8 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Transfer Claim",
     "Withdrawal Request",
     "View complete passbook",
+    "Total experience",
+    "Track claim",
   ]) {
     assert.match(app, new RegExp(feature));
   }

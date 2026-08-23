@@ -9,6 +9,7 @@ const employers = [
     dates: "Jan 2022 — Present",
     memberId: "KN/BN/0004821/014",
     balance: 184260,
+    serviceMonths: 56,
     active: true,
     contributions: [
       { month: "July 2026", pf: 3600, eps: 1250 },
@@ -23,6 +24,7 @@ const employers = [
     dates: "Apr 2019 — Dec 2021",
     memberId: "KN/BN/0004821/009",
     balance: 92340,
+    serviceMonths: 33,
     contributions: [
       { month: "Dec 2021", pf: 2800, eps: 1020 },
       { month: "Nov 2021", pf: 2800, eps: 1020 },
@@ -36,6 +38,7 @@ const employers = [
     dates: "Jul 2016 — Mar 2019",
     memberId: "KN/BN/0004821/004",
     balance: 47820,
+    serviceMonths: 33,
     contributions: [
       { month: "Mar 2019", pf: 2100, eps: 900 },
       { month: "Feb 2019", pf: 2100, eps: 900 },
@@ -75,9 +78,6 @@ function ClaimProgress({ claim }) {
     <section className="claim" aria-label={`${claim.type} status`}>
       <div className="claim-title">
         <span className="status-dot" /> {claim.type}
-        <button className="link-button">
-          Track claim <span aria-hidden>→</span>
-        </button>
       </div>
       <ol className="progress">
         {steps.map((step, i) => (
@@ -90,30 +90,42 @@ function ClaimProgress({ claim }) {
     </section>
   );
 }
-function EmployerCard({ employer, expanded, onToggle }) {
+function EmployerCard({
+  employer,
+  expanded,
+  isTrackingClaim,
+  onToggle,
+  onPassbook,
+  onTrackClaim,
+}) {
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
-      <button
-        className="employer-summary"
-        aria-expanded={expanded}
-        onClick={onToggle}
-      >
-        <div className="company">
-          <span className="avatar">{employer.company[0]}</span>
-          <span>
-            <strong>{employer.company}</strong>
-            <small>{employer.dates}</small>
+      <div className="employer-summary-row">
+        <button
+          className="employer-summary"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          <div className="company">
+            <span className="avatar">{employer.company[0]}</span>
+            <span>
+              <strong>{employer.company}</strong>
+              <small>{employer.dates}</small>
+            </span>
+          </div>
+          <div className="balance">
+            <small>Total PF balance</small>
+            <strong>{money(employer.balance)}</strong>
+            <small className="member">Member ID: {employer.memberId}</small>
+          </div>
+          <span className="chevron" aria-hidden>
+            ⌄
           </span>
-        </div>
-        <div className="balance">
-          <small>Total PF balance</small>
-          <strong>{money(employer.balance)}</strong>
-          <small className="member">Member ID · {employer.memberId}</small>
-        </div>
-        <span className="chevron" aria-hidden>
-          ⌄
-        </span>
-      </button>
+        </button>
+        <button className="row-passbook" onClick={onPassbook}>
+          <span aria-hidden>▤</span> View complete passbook
+        </button>
+      </div>
       {expanded && (
         <div className="detail">
           <div className="section-heading">
@@ -121,22 +133,28 @@ function EmployerCard({ employer, expanded, onToggle }) {
               <h3>Recent contributions</h3>
               <p>Last 3 credited months</p>
             </div>
-            <a href="#passbook">View all</a>
           </div>
           <div className="contributions">
-            {employer.contributions.map((c) => (
-              <div className="contribution" key={c.month}>
-                <strong>{c.month}</strong>
+            {employer.contributions.map((contribution) => (
+              <div className="contribution" key={contribution.month}>
+                <strong>{contribution.month}</strong>
                 <span>
-                  PF <b>{money(c.pf)}</b>
+                  PF <b>{money(contribution.pf)}</b>
                 </span>
                 <span>
-                  EPS <b>{money(c.eps)}</b>
+                  EPS <b>{money(contribution.eps)}</b>
                 </span>
               </div>
             ))}
           </div>
-          {employer.claim && <ClaimProgress claim={employer.claim} />}
+          {employer.claim && !isTrackingClaim && (
+            <button className="track-claim" onClick={onTrackClaim}>
+              Track claim <span aria-hidden>→</span>
+            </button>
+          )}
+          {employer.claim && isTrackingClaim && (
+            <ClaimProgress claim={employer.claim} />
+          )}
           <div className="actions">
             <button className="secondary">Transfer Claim</button>
             <button className="primary">Withdrawal Request</button>
@@ -148,6 +166,18 @@ function EmployerCard({ employer, expanded, onToggle }) {
 }
 function Dashboard({ onLogout, onPassbook }) {
   const [open, setOpen] = useState("u112");
+  const [trackedClaim, setTrackedClaim] = useState(null);
+  const combinedBalance = employers.reduce(
+    (sum, employer) => sum + employer.balance,
+    0,
+  );
+  const totalServiceMonths = employers.reduce(
+    (sum, employer) => sum + employer.serviceMonths,
+    0,
+  );
+  const totalYears = Math.floor(totalServiceMonths / 12);
+  const remainingMonths = totalServiceMonths % 12;
+
   return (
     <>
       <Header onLogout={onLogout} />
@@ -158,11 +188,17 @@ function Dashboard({ onLogout, onPassbook }) {
             <h1>Good morning, Ananya.</h1>
             <p>Here’s a clear view of your provident fund accounts.</p>
           </div>
-          <div className="total">
-            <small>Combined balance</small>
-            <strong>
-              {money(employers.reduce((sum, e) => sum + e.balance, 0))}
-            </strong>
+          <div className="dashboard-summary">
+            <div className="total">
+              <small>Combined balance</small>
+              <strong>{money(combinedBalance)}</strong>
+            </div>
+            <div className="total experience">
+              <small>Total experience</small>
+              <strong>
+                {totalYears} years {remainingMonths} months
+              </strong>
+            </div>
           </div>
         </div>
         <section className="accounts">
@@ -173,12 +209,17 @@ function Dashboard({ onLogout, onPassbook }) {
             </div>
             <span>{employers.length} accounts</span>
           </div>
-          {employers.map((e) => (
+          {employers.map((employer) => (
             <EmployerCard
-              key={e.id}
-              employer={e}
-              expanded={open === e.id}
-              onToggle={() => setOpen(open === e.id ? null : e.id)}
+              key={employer.id}
+              employer={employer}
+              expanded={open === employer.id}
+              isTrackingClaim={trackedClaim === employer.id}
+              onToggle={() =>
+                setOpen(open === employer.id ? null : employer.id)
+              }
+              onPassbook={onPassbook}
+              onTrackClaim={() => setTrackedClaim(employer.id)}
             />
           ))}
         </section>

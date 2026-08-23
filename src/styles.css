@@ -529,3 +529,90 @@ h3 {
     min-height: calc(100vh - 310px);
   }
 }
+
+.dashboard-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.experience {
+  background: #e7f2ed;
+}
+
+.employer-summary-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.employer-summary-row .employer-summary {
+  flex: 1;
+}
+
+.row-passbook {
+  align-self: center;
+  margin-right: 18px;
+  padding: 8px 10px;
+  border: 1px solid #b8d6cd;
+  border-radius: 7px;
+  background: #f5faf7;
+  color: #145f52;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.member {
+  max-width: 250px;
+  color: #315d50 !important;
+  font-size: 0.8rem !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+}
+
+.track-claim {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid #b8d6cd;
+  border-radius: 8px;
+  background: #f0f7e8;
+  color: #176c5d;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.track-claim span {
+  float: right;
+}
+
+@media (max-width: 650px) {
+  .dashboard-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 22px;
+  }
+
+  .dashboard-summary .total {
+    width: auto;
+    margin-top: 0;
+    min-width: 0;
+    padding: 13px;
+  }
+
+  .dashboard-summary .total strong {
+    font-size: 1.12rem;
+  }
+
+  .employer-summary-row {
+    display: block;
+  }
+
+  .row-passbook {
+    width: calc(100% - 30px);
+    margin: 0 15px 15px;
+  }
+}
