@@ -158,16 +158,18 @@ function EmployerCard({
               </div>
             ))}
           </div>
-          <button className="detail-passbook" onClick={onPassbook}>
-            <span aria-hidden>▤</span> View complete passbook{" "}
-            <span aria-hidden>→</span>
-          </button>
+          <div className="detail-passbook-row">
+            <button className="detail-passbook" onClick={onPassbook}>
+              <span aria-hidden>▤</span> View complete passbook{" "}
+              <span aria-hidden>→</span>
+            </button>
+          </div>
           {isTrackingClaim && <ClaimProgress claim={employer.claim} />}
           <div className="actions">
             {employer.balance === 0 &&
             employer.claim?.claimStatus === "Processed" ? (
               <button className="secondary" onClick={onTrackClaim}>
-                Track claim
+                {isTrackingClaim ? "Hide claim progress" : "Track claim"}
               </button>
             ) : (
               <button className="secondary">Transfer Claim</button>
@@ -234,7 +236,11 @@ function Dashboard({ onLogout, onPassbook }) {
                 setOpen(open === employer.id ? null : employer.id)
               }
               onPassbook={onPassbook}
-              onTrackClaim={() => setTrackedClaim(employer.id)}
+              onTrackClaim={() =>
+                setTrackedClaim(
+                  trackedClaim === employer.id ? null : employer.id,
+                )
+              }
             />
           ))}
         </section>

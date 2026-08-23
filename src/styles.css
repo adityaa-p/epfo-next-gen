@@ -571,10 +571,10 @@ h3 {
 
 .detail-passbook {
   display: flex;
-  width: 100%;
+  width: auto;
   align-items: center;
   gap: 8px;
-  margin-top: 15px;
+  margin-top: 0;
   padding: 11px 12px;
   border: 1px solid #b8d6cd;
   border-radius: 8px;
@@ -587,11 +587,6 @@ h3 {
 
 .detail-passbook span:last-child {
   margin-left: auto;
-}
-
-.progress li {
-  animation: reveal-progress 400ms ease both;
-  animation-delay: calc(var(--step) * 100ms);
 }
 
 .progress time {
@@ -617,5 +612,53 @@ h3 {
 @media (prefers-reduced-motion: reduce) {
   .progress li {
     animation: none;
+  }
+}
+
+.detail-passbook-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.progress {
+  width: 100%;
+  overflow: visible;
+}
+
+.progress li {
+  min-width: 0;
+  flex: 1;
+  animation: reveal-progress 650ms ease both;
+  animation-delay: calc(var(--step) * 900ms);
+}
+
+.progress li:not(:last-child)::after {
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: draw-progress-line 900ms ease forwards;
+  animation-delay: calc((var(--step) * 900ms) + 400ms);
+}
+
+@keyframes draw-progress-line {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress li:not(:last-child)::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 650px) {
+  .detail-passbook-row {
+    justify-content: flex-start;
+  }
+
+  .progress li {
+    font-size: 0.58rem;
   }
 }
