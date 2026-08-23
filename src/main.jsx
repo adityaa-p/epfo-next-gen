@@ -16,21 +16,32 @@ const employers = [
       { month: "June 2026", pf: 3600, eps: 1250 },
       { month: "May 2026", pf: 3600, eps: 1250 },
     ],
-    claim: { type: "Transfer claim", status: 3 },
   },
   {
     id: "u088",
     company: "Aster Cloud Services",
     dates: "Apr 2019 — Dec 2021",
     memberId: "KN/BN/0004821/009",
-    balance: 92340,
+    balance: 0,
     serviceMonths: 33,
     contributions: [
       { month: "Dec 2021", pf: 2800, eps: 1020 },
       { month: "Nov 2021", pf: 2800, eps: 1020 },
       { month: "Oct 2021", pf: 2800, eps: 1020 },
     ],
-    claim: { type: "Withdrawal request", status: 1 },
+    claim: {
+      type: "Transfer claim",
+      claimStatus: "Processed",
+      progressStep: 5,
+      statusDates: [
+        "14 Jan 2022",
+        "16 Jan 2022",
+        "19 Jan 2022",
+        "22 Jan 2022",
+        "25 Jan 2022",
+        "27 Jan 2022",
+      ],
+    },
   },
   {
     id: "u051",
@@ -81,9 +92,14 @@ function ClaimProgress({ claim }) {
       </div>
       <ol className="progress">
         {steps.map((step, i) => (
-          <li key={step} className={i <= claim.status ? "complete" : ""}>
-            <span>{i <= claim.status ? "✓" : i + 1}</span>
+          <li
+            key={step}
+            className={i <= claim.progressStep ? "complete" : ""}
+            style={{ "--step": i }}
+          >
+            <span>{i <= claim.progressStep ? "✓" : i + 1}</span>
             <small>{step}</small>
+            <time>{claim.statusDates[i]}</time>
           </li>
         ))}
       </ol>
@@ -100,32 +116,27 @@ function EmployerCard({
 }) {
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
-      <div className="employer-summary-row">
-        <button
-          className="employer-summary"
-          aria-expanded={expanded}
-          onClick={onToggle}
-        >
-          <div className="company">
-            <span className="avatar">{employer.company[0]}</span>
-            <span>
-              <strong>{employer.company}</strong>
-              <small>{employer.dates}</small>
-            </span>
-          </div>
-          <div className="balance">
-            <small>Total PF balance</small>
-            <strong>{money(employer.balance)}</strong>
-            <small className="member">Member ID: {employer.memberId}</small>
-          </div>
-          <span className="chevron" aria-hidden>
-            ⌄
+      <button
+        className="employer-summary"
+        aria-expanded={expanded}
+        onClick={onToggle}
+      >
+        <div className="company">
+          <span className="avatar">{employer.company[0]}</span>
+          <span>
+            <strong>{employer.company}</strong>
+            <small>{employer.dates}</small>
           </span>
-        </button>
-        <button className="row-passbook" onClick={onPassbook}>
-          <span aria-hidden>▤</span> View complete passbook
-        </button>
-      </div>
+        </div>
+        <div className="balance">
+          <small>Total PF balance</small>
+          <strong>{money(employer.balance)}</strong>
+          <small className="member">Member ID: {employer.memberId}</small>
+        </div>
+        <span className="chevron" aria-hidden>
+          ⌄
+        </span>
+      </button>
       {expanded && (
         <div className="detail">
           <div className="section-heading">
@@ -147,16 +158,20 @@ function EmployerCard({
               </div>
             ))}
           </div>
-          {employer.claim && !isTrackingClaim && (
-            <button className="track-claim" onClick={onTrackClaim}>
-              Track claim <span aria-hidden>→</span>
-            </button>
-          )}
-          {employer.claim && isTrackingClaim && (
-            <ClaimProgress claim={employer.claim} />
-          )}
+          <button className="detail-passbook" onClick={onPassbook}>
+            <span aria-hidden>▤</span> View complete passbook{" "}
+            <span aria-hidden>→</span>
+          </button>
+          {isTrackingClaim && <ClaimProgress claim={employer.claim} />}
           <div className="actions">
-            <button className="secondary">Transfer Claim</button>
+            {employer.balance === 0 &&
+            employer.claim?.claimStatus === "Processed" ? (
+              <button className="secondary" onClick={onTrackClaim}>
+                Track claim
+              </button>
+            ) : (
+              <button className="secondary">Transfer Claim</button>
+            )}
             <button className="primary">Withdrawal Request</button>
           </div>
         </div>

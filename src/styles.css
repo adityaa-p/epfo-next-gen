@@ -541,28 +541,6 @@ h3 {
   background: #e7f2ed;
 }
 
-.employer-summary-row {
-  display: flex;
-  align-items: stretch;
-}
-
-.employer-summary-row .employer-summary {
-  flex: 1;
-}
-
-.row-passbook {
-  align-self: center;
-  margin-right: 18px;
-  padding: 8px 10px;
-  border: 1px solid #b8d6cd;
-  border-radius: 7px;
-  background: #f5faf7;
-  color: #145f52;
-  font-size: 0.72rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .member {
   max-width: 250px;
   color: #315d50 !important;
@@ -570,23 +548,6 @@ h3 {
   font-weight: 600;
   letter-spacing: 0.01em;
   overflow-wrap: anywhere;
-}
-
-.track-claim {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px 14px;
-  border: 1px solid #b8d6cd;
-  border-radius: 8px;
-  background: #f0f7e8;
-  color: #176c5d;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-align: left;
-}
-
-.track-claim span {
-  float: right;
 }
 
 @media (max-width: 650px) {
@@ -606,13 +567,55 @@ h3 {
   .dashboard-summary .total strong {
     font-size: 1.12rem;
   }
+}
 
-  .employer-summary-row {
-    display: block;
+.detail-passbook {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 11px 12px;
+  border: 1px solid #b8d6cd;
+  border-radius: 8px;
+  background: #f5faf7;
+  color: #145f52;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.detail-passbook span:last-child {
+  margin-left: auto;
+}
+
+.progress li {
+  animation: reveal-progress 400ms ease both;
+  animation-delay: calc(var(--step) * 100ms);
+}
+
+.progress time {
+  display: block;
+  min-height: 1.8em;
+  color: #6c817d;
+  font-size: 0.57rem;
+  line-height: 1.2;
+}
+
+@keyframes reveal-progress {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 
-  .row-passbook {
-    width: calc(100% - 30px);
-    margin: 0 15px 15px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress li {
+    animation: none;
   }
 }
