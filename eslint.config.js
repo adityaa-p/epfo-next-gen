@@ -6,7 +6,7 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
       parserOptions: { ecmaFeatures: { jsx: true } },
-      globals: { document: "readonly", URL: "readonly" },
+      globals: { document: "readonly", URL: "readonly", process: "readonly" },
     },
     rules: {
       "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
