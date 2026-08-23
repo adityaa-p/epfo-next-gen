@@ -228,23 +228,6 @@ h3 {
   margin-top: 15px;
   overflow: hidden;
 }
-.contribution {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr;
-  padding: 11px 13px;
-  border-bottom: 1px solid #e7ece9;
-  font-size: 0.79rem;
-}
-.contribution:last-child {
-  border: 0;
-}
-.contribution span {
-  color: #628079;
-}
-.contribution b {
-  color: #234e45;
-  float: right;
-}
 .claim {
   margin-top: 21px;
   padding: 15px;
@@ -494,13 +477,6 @@ h3 {
   .detail {
     padding: 18px 14px;
   }
-  .contribution {
-    grid-template-columns: 1fr 1fr;
-  }
-  .contribution strong {
-    grid-column: 1/-1;
-    margin-bottom: 6px;
-  }
   .progress {
     margin-left: -4px;
   }
@@ -661,4 +637,57 @@ h3 {
   .progress li {
     font-size: 0.58rem;
   }
+}
+
+.contributions {
+  overflow-x: auto;
+  background: #fff;
+}
+
+.contributions table {
+  width: 100%;
+  min-width: 610px;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.contributions th,
+.contributions td {
+  padding: 13px 15px;
+  border-bottom: 1px solid #e7ece9;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.contributions thead th {
+  background: #edf5ed;
+  color: #42655c;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.contributions th:first-child,
+.contributions td:first-child {
+  text-align: left;
+}
+
+.contributions tbody th {
+  color: #264b43;
+  font-weight: 700;
+}
+
+.contributions tbody td {
+  color: #315d50;
+  font-variant-numeric: tabular-nums;
+}
+
+.contributions tbody tr:last-child th,
+.contributions tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.contributions tbody tr:hover {
+  background: #f8fbf7;
 }

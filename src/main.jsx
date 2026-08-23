@@ -12,9 +12,9 @@ const employers = [
     serviceMonths: 56,
     active: true,
     contributions: [
-      { month: "July 2026", pf: 3600, eps: 1250 },
-      { month: "June 2026", pf: 3600, eps: 1250 },
-      { month: "May 2026", pf: 3600, eps: 1250 },
+      { date: "01 July 2026", employee: 3600, employer: 1100, pension: 2500 },
+      { date: "01 June 2026", employee: 3600, employer: 1100, pension: 2500 },
+      { date: "01 May 2026", employee: 3600, employer: 1100, pension: 2500 },
     ],
   },
   {
@@ -25,9 +25,24 @@ const employers = [
     balance: 0,
     serviceMonths: 33,
     contributions: [
-      { month: "Dec 2021", pf: 2800, eps: 1020 },
-      { month: "Nov 2021", pf: 2800, eps: 1020 },
-      { month: "Oct 2021", pf: 2800, eps: 1020 },
+      {
+        date: "01 December 2021",
+        employee: 2800,
+        employer: 1020,
+        pension: 1780,
+      },
+      {
+        date: "01 November 2021",
+        employee: 2800,
+        employer: 1020,
+        pension: 1780,
+      },
+      {
+        date: "01 October 2021",
+        employee: 2800,
+        employer: 1020,
+        pension: 1780,
+      },
     ],
     claim: {
       type: "Transfer claim",
@@ -51,9 +66,14 @@ const employers = [
     balance: 47820,
     serviceMonths: 33,
     contributions: [
-      { month: "Mar 2019", pf: 2100, eps: 900 },
-      { month: "Feb 2019", pf: 2100, eps: 900 },
-      { month: "Jan 2019", pf: 2100, eps: 900 },
+      { date: "01 March 2019", employee: 2100, employer: 770, pension: 1330 },
+      {
+        date: "01 February 2019",
+        employee: 2100,
+        employer: 770,
+        pension: 1330,
+      },
+      { date: "01 January 2019", employee: 2100, employer: 770, pension: 1330 },
     ],
   },
 ];
@@ -67,8 +87,6 @@ const steps = [
 ];
 const money = (amount) =>
   new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
     maximumFractionDigits: 0,
   }).format(amount);
 
@@ -146,17 +164,26 @@ function EmployerCard({
             </div>
           </div>
           <div className="contributions">
-            {employer.contributions.map((contribution) => (
-              <div className="contribution" key={contribution.month}>
-                <strong>{contribution.month}</strong>
-                <span>
-                  PF <b>{money(contribution.pf)}</b>
-                </span>
-                <span>
-                  EPS <b>{money(contribution.eps)}</b>
-                </span>
-              </div>
-            ))}
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Transaction date</th>
+                  <th scope="col">Employee share (12%)</th>
+                  <th scope="col">Employer share (3.67%)</th>
+                  <th scope="col">Pension share (8.33%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employer.contributions.map((contribution) => (
+                  <tr key={contribution.date}>
+                    <th scope="row">{contribution.date}</th>
+                    <td>{money(contribution.employee)}</td>
+                    <td>{money(contribution.employer)}</td>
+                    <td>{money(contribution.pension)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           <div className="detail-passbook-row">
             <button className="detail-passbook" onClick={onPassbook}>

@@ -35,7 +35,11 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Track claim",
     "Hide claim progress",
     "Processed",
+    "Transaction date",
+    "Employee share (12%)",
+    "Employer share (3.67%)",
+    "Pension share (8.33%)",
   ]) {
-    assert.match(app, new RegExp(feature));
+    assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }
 });
