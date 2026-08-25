@@ -39,6 +39,9 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Employee share (12%)",
     "Employer share (3.67%)",
     "Pension share (8.33%)",
+    "Universal Account Number (UAN)",
+    "Total service:",
+    "01 April 2019 — 31 December 2021",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

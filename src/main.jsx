@@ -6,7 +6,7 @@ const employers = [
   {
     id: "u112",
     company: "Northstar Technologies Pvt. Ltd.",
-    dates: "Jan 2022 — Present",
+    dates: "01 January 2022 — Present",
     memberId: "KN/BN/0004821/014",
     balance: 184260,
     serviceMonths: 56,
@@ -20,7 +20,7 @@ const employers = [
   {
     id: "u088",
     company: "Aster Cloud Services",
-    dates: "Apr 2019 — Dec 2021",
+    dates: "01 April 2019 — 31 December 2021",
     memberId: "KN/BN/0004821/009",
     balance: 0,
     serviceMonths: 33,
@@ -61,7 +61,7 @@ const employers = [
   {
     id: "u051",
     company: "Cedar Retail India Ltd.",
-    dates: "Jul 2016 — Mar 2019",
+    dates: "01 July 2016 — 31 March 2019",
     memberId: "KN/BN/0004821/004",
     balance: 47820,
     serviceMonths: 33,
@@ -85,10 +85,16 @@ const steps = [
   "Approved by field officer",
   "Done",
 ];
+const uan = "1009 2847 3612";
 const money = (amount) =>
   new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0,
   }).format(amount);
+const serviceDuration = (months) => {
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
+};
 
 function Header({ onLogout }) {
   return (
@@ -143,7 +149,10 @@ function EmployerCard({
           <span className="avatar">{employer.company[0]}</span>
           <span>
             <strong>{employer.company}</strong>
-            <small>{employer.dates}</small>
+            <small className="employment-dates">{employer.dates}</small>
+            <small className="row-service">
+              Total service: {serviceDuration(employer.serviceMonths)}
+            </small>
           </span>
         </div>
         <div className="balance">
@@ -226,6 +235,15 @@ function Dashboard({ onLogout, onPassbook }) {
     <>
       <Header onLogout={onLogout} />
       <main id="dashboard">
+        <section className="uan-banner" aria-label="Universal Account Number">
+          <div>
+            <small>Universal Account Number (UAN)</small>
+            <strong>{uan}</strong>
+          </div>
+          <span>
+            <span aria-hidden>✓</span> Verified
+          </span>
+        </section>
         <div className="welcome">
           <div>
             <p className="eyebrow">MEMBER HOME</p>

@@ -691,3 +691,75 @@ h3 {
 .contributions tbody tr:hover {
   background: #f8fbf7;
 }
+
+.uan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 34px;
+  padding: 17px 20px;
+  border: 1px solid #b8d6cd;
+  border-radius: 12px;
+  background: linear-gradient(115deg, #e9f5df, #f4f9ef);
+  box-shadow: 0 2px 8px #173b3210;
+}
+
+.uan-banner small {
+  display: block;
+  margin-bottom: 3px;
+  color: #55756d;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.uan-banner strong {
+  color: #123a35;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.09em;
+}
+
+.uan-banner > span {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #d7edcf;
+  color: #287051;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.employment-dates {
+  margin-top: 2px;
+  color: #59716b !important;
+  font-size: 0.76rem !important;
+}
+
+.row-service {
+  display: inline-block !important;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #edf5e4;
+  color: #356457 !important;
+  font-size: 0.68rem !important;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .uan-banner {
+    margin-bottom: 28px;
+    padding: 15px;
+  }
+
+  .uan-banner strong {
+    font-size: 1.18rem;
+  }
+
+  .uan-banner > span {
+    padding: 5px 8px;
+  }
+}
