@@ -61,6 +61,8 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "EPS wages",
     "Total Contributions for the year",
     "12 contributions from April to March",
+    "Choose employer",
+    "allowEmployerSelection",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

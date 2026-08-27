@@ -710,7 +710,7 @@ function Dashboard({ onLogout, onPassbook }) {
               onToggle={() =>
                 setOpen(open === employer.id ? null : employer.id)
               }
-              onPassbook={() => onPassbook(employer)}
+              onPassbook={() => onPassbook(employer, false)}
               onTransferClaim={() => {
                 setTransferEmployer(employer);
                 setTargetEmployer(null);
@@ -732,7 +732,7 @@ function Dashboard({ onLogout, onPassbook }) {
         <button
           id="passbook"
           className="passbook"
-          onClick={() => onPassbook(employers[0])}
+          onClick={() => onPassbook(employers[0], true)}
         >
           <span>▤</span>
           <span>
@@ -783,9 +783,10 @@ function Dashboard({ onLogout, onPassbook }) {
     </>
   );
 }
-function Passbook({ employer, onBack, onLogout }) {
+function Passbook({ employer, allowEmployerSelection, onBack, onLogout }) {
   const [financialYear, setFinancialYear] = useState(financialYears[0]);
-  const entries = buildPassbookEntries(employer, financialYear);
+  const [selectedEmployer, setSelectedEmployer] = useState(employer);
+  const entries = buildPassbookEntries(selectedEmployer, financialYear);
   const totals = entries.reduce(
     (sum, entry) => ({
       epfWages: sum.epfWages + entry.epfWages,
@@ -835,12 +836,31 @@ function Passbook({ employer, onBack, onLogout }) {
         </div>
 
         <section className="passbook-employer" aria-label="Selected employer">
-          <span className="avatar">{employer.company[0]}</span>
-          <div>
+          <span className="avatar">{selectedEmployer.company[0]}</span>
+          <div className="passbook-employer-details">
             <small>Selected employer</small>
-            <strong>{employer.company}</strong>
-            <span>Member ID: {employer.memberId}</span>
+            <strong>{selectedEmployer.company}</strong>
+            <span>Member ID: {selectedEmployer.memberId}</span>
           </div>
+          {allowEmployerSelection && (
+            <label className="employer-selector">
+              <span>Choose employer</span>
+              <select
+                value={selectedEmployer.id}
+                onChange={(event) =>
+                  setSelectedEmployer(
+                    employers.find((item) => item.id === event.target.value),
+                  )
+                }
+              >
+                {employers.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.company}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </section>
 
         <section
@@ -988,17 +1008,20 @@ function Login({ onVerify }) {
 }
 function App() {
   const [signedIn, setSignedIn] = useState(false);
-  const [passbookEmployer, setPassbookEmployer] = useState(null);
+  const [passbookView, setPassbookView] = useState(null);
   if (!signedIn) return <Login onVerify={() => setSignedIn(true)} />;
-  return passbookEmployer ? (
+  return passbookView ? (
     <Passbook
-      employer={passbookEmployer}
-      onBack={() => setPassbookEmployer(null)}
+      employer={passbookView.employer}
+      allowEmployerSelection={passbookView.allowEmployerSelection}
+      onBack={() => setPassbookView(null)}
       onLogout={() => setSignedIn(false)}
     />
   ) : (
     <Dashboard
-      onPassbook={setPassbookEmployer}
+      onPassbook={(employer, allowEmployerSelection) =>
+        setPassbookView({ employer, allowEmployerSelection })
+      }
       onLogout={() => setSignedIn(false)}
     />
   );

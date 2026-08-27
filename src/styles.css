@@ -1439,3 +1439,64 @@ h3 {
     padding: 11px 12px;
   }
 }
+
+.passbook-employer-details {
+  min-width: 0;
+}
+
+.employer-selector {
+  min-width: 260px;
+  margin-left: auto;
+  color: #55756d;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.employer-selector > span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.employer-selector select {
+  appearance: none;
+  width: 100%;
+  padding: 10px 38px 10px 12px;
+  border: 1px solid #a9c7bc;
+  border-radius: 8px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23315d50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: #214a42;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.employer-selector select:focus {
+  border-color: #176c5d;
+  outline: none;
+  box-shadow: 0 0 0 3px #176c5d1f;
+}
+
+@media (max-width: 650px) {
+  .passbook-employer {
+    flex-wrap: wrap;
+  }
+
+  .passbook-employer-details {
+    width: calc(100% - 55px);
+  }
+
+  .employer-selector {
+    width: 100%;
+    min-width: 0;
+    margin-top: 10px;
+    margin-left: 0;
+  }
+}
