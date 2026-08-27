@@ -67,6 +67,10 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Hide request progress",
     "Withdrawal request status",
     "Approved by field office",
+    "EPFO One assistant",
+    "Ask about your PF account",
+    "Mock assistant",
+    "getChatResponse",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

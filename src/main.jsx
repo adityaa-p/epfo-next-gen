@@ -1077,24 +1077,169 @@ function Login({ onVerify }) {
     </main>
   );
 }
+
+const chatAnswers = [
+  {
+    keywords: ["balance", "total pf"],
+    response:
+      "Your combined PF balance is shown at the top of the member dashboard. Expand an employer to review its individual balance and contributions.",
+  },
+  {
+    keywords: ["transfer", "claim"],
+    response:
+      "To transfer PF funds, expand the previous employer, select Transfer Claim, choose the destination employer, and confirm the request. You can track it from the same row after submission.",
+  },
+  {
+    keywords: ["withdraw", "advance", "form-31"],
+    response:
+      "Expand an employer and choose Withdrawal Request. Complete the PF Advance form, review the eligible amount, and confirm the submission. A tracking action appears after it is submitted.",
+  },
+  {
+    keywords: ["passbook", "contribution"],
+    response:
+      "Select View complete passbook to review monthly EPF and EPS wages, employee and employer shares, pension contributions, and financial-year totals.",
+  },
+  {
+    keywords: ["uan", "universal account"],
+    response:
+      "Your verified Universal Account Number is displayed prominently at the top of the dashboard. The same UAN links your employment member IDs.",
+  },
+];
+
+function getChatResponse(question) {
+  const normalizedQuestion = question.toLowerCase();
+  const answer = chatAnswers.find(({ keywords }) =>
+    keywords.some((keyword) => normalizedQuestion.includes(keyword)),
+  );
+  return (
+    answer?.response ||
+    "I can help with PF balances, contributions, passbooks, transfer claims, withdrawal requests, and UAN details. Try asking about one of these topics."
+  );
+}
+
+function ChatAssistant() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      sender: "assistant",
+      text: "Hi! I’m the EPFO One assistant. How can I help you today?",
+    },
+  ]);
+
+  const submitQuestion = (event) => {
+    event.preventDefault();
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion) return;
+
+    setMessages((current) => [
+      ...current,
+      { sender: "user", text: trimmedQuestion },
+      { sender: "assistant", text: getChatResponse(trimmedQuestion) },
+    ]);
+    setQuestion("");
+  };
+
+  return (
+    <aside className="chat-assistant" aria-label="EPFO One chat assistant">
+      {isOpen && (
+        <section className="chat-window" aria-label="Chat window">
+          <div className="chat-header">
+            <div>
+              <span className="chat-avatar" aria-hidden>
+                e
+              </span>
+              <div>
+                <strong>EPFO One assistant</strong>
+                <small>
+                  <span aria-hidden /> Online · MVP answers
+                </small>
+              </div>
+            </div>
+            <button onClick={() => setIsOpen(false)} aria-label="Close chat">
+              ×
+            </button>
+          </div>
+
+          <div className="chat-messages" aria-live="polite">
+            {messages.map((message, index) => (
+              <div
+                className={`chat-message ${message.sender}`}
+                key={`${message.sender}-${index}`}
+              >
+                {message.text}
+              </div>
+            ))}
+          </div>
+
+          <form className="chat-form" onSubmit={submitQuestion}>
+            <label className="sr-only" htmlFor="chat-question">
+              Ask a question
+            </label>
+            <input
+              id="chat-question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="Ask about your PF account…"
+              autoComplete="off"
+            />
+            <button
+              type="submit"
+              disabled={!question.trim()}
+              aria-label="Send question"
+            >
+              <span aria-hidden>➤</span>
+            </button>
+          </form>
+          <small className="chat-disclaimer">
+            Mock assistant · Responses are for demonstration only.
+          </small>
+        </section>
+      )}
+
+      <button
+        className="chat-bubble"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? "Close EPFO assistant" : "Open EPFO assistant"}
+      >
+        <span aria-hidden>{isOpen ? "×" : "✦"}</span>
+        {!isOpen && <small>Ask EPFO One</small>}
+      </button>
+    </aside>
+  );
+}
+
 function App() {
   const [signedIn, setSignedIn] = useState(false);
   const [passbookView, setPassbookView] = useState(null);
-  if (!signedIn) return <Login onVerify={() => setSignedIn(true)} />;
-  return passbookView ? (
-    <Passbook
-      employer={passbookView.employer}
-      allowEmployerSelection={passbookView.allowEmployerSelection}
-      onBack={() => setPassbookView(null)}
-      onLogout={() => setSignedIn(false)}
-    />
-  ) : (
-    <Dashboard
-      onPassbook={(employer, allowEmployerSelection) =>
-        setPassbookView({ employer, allowEmployerSelection })
-      }
-      onLogout={() => setSignedIn(false)}
-    />
+  let page = <Login onVerify={() => setSignedIn(true)} />;
+
+  if (signedIn && passbookView) {
+    page = (
+      <Passbook
+        employer={passbookView.employer}
+        allowEmployerSelection={passbookView.allowEmployerSelection}
+        onBack={() => setPassbookView(null)}
+        onLogout={() => setSignedIn(false)}
+      />
+    );
+  } else if (signedIn) {
+    page = (
+      <Dashboard
+        onPassbook={(employer, allowEmployerSelection) =>
+          setPassbookView({ employer, allowEmployerSelection })
+        }
+        onLogout={() => setSignedIn(false)}
+      />
+    );
+  }
+
+  return (
+    <>
+      {page}
+      <ChatAssistant />
+    </>
   );
 }
 
