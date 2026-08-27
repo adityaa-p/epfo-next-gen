@@ -85,6 +85,12 @@ const steps = [
   "Approved by field officer",
   "Done",
 ];
+const withdrawalSteps = [
+  "Submitted",
+  "Pending at field office",
+  "Approved by field office",
+  "Done",
+];
 const memberName = "Ananya Kapoor";
 const uan = "1009 2847 3612";
 const locations = {
@@ -176,6 +182,34 @@ function ClaimProgress({ claim }) {
             <span>{i <= claim.progressStep ? "✓" : i + 1}</span>
             <small>{step}</small>
             {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function WithdrawalProgress({ request }) {
+  return (
+    <section
+      className="claim withdrawal-progress"
+      aria-label="Withdrawal request status"
+    >
+      <div className="claim-title">
+        <span className="status-dot" /> Withdrawal request
+      </div>
+      <ol className="progress withdrawal-progress-steps">
+        {withdrawalSteps.map((step, index) => (
+          <li
+            key={step}
+            className={index <= request.progressStep ? "complete" : ""}
+            style={{ "--step": index }}
+          >
+            <span>{index <= request.progressStep ? "✓" : index + 1}</span>
+            <small>{step}</small>
+            {request.statusDates[index] && (
+              <time>{request.statusDates[index]}</time>
+            )}
           </li>
         ))}
       </ol>
@@ -501,12 +535,15 @@ function WithdrawalConfirmationModal({ form, onNo, onYes }) {
 function EmployerCard({
   employer,
   claim,
+  withdrawalRequest,
   expanded,
   isTrackingClaim,
+  isTrackingWithdrawal,
   onToggle,
   onPassbook,
   onTrackClaim,
   onTransferClaim,
+  onTrackWithdrawal,
   onWithdrawalRequest,
 }) {
   return (
@@ -572,6 +609,9 @@ function EmployerCard({
             </button>
           </div>
           {isTrackingClaim && <ClaimProgress claim={claim} />}
+          {isTrackingWithdrawal && (
+            <WithdrawalProgress request={withdrawalRequest} />
+          )}
           <div className="actions">
             {claim ? (
               <button className="secondary" onClick={onTrackClaim}>
@@ -582,9 +622,17 @@ function EmployerCard({
                 Transfer Claim
               </button>
             )}
-            <button className="primary" onClick={onWithdrawalRequest}>
-              Withdrawal Request
-            </button>
+            {withdrawalRequest ? (
+              <button className="primary" onClick={onTrackWithdrawal}>
+                {isTrackingWithdrawal
+                  ? "Hide request progress"
+                  : "Track request progress"}
+              </button>
+            ) : (
+              <button className="primary" onClick={onWithdrawalRequest}>
+                Withdrawal Request
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -594,7 +642,9 @@ function EmployerCard({
 function Dashboard({ onLogout, onPassbook }) {
   const [open, setOpen] = useState("u112");
   const [trackedClaim, setTrackedClaim] = useState(null);
+  const [trackedWithdrawal, setTrackedWithdrawal] = useState(null);
   const [submittedClaims, setSubmittedClaims] = useState({});
+  const [withdrawalRequests, setWithdrawalRequests] = useState({});
   const [transferEmployer, setTransferEmployer] = useState(null);
   const [targetEmployer, setTargetEmployer] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -656,6 +706,20 @@ function Dashboard({ onLogout, onPassbook }) {
   };
 
   const submitWithdrawalRequest = () => {
+    const submissionDate = new Intl.DateTimeFormat("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+    setWithdrawalRequests((requests) => ({
+      ...requests,
+      [withdrawEmployer.id]: {
+        type: "Withdrawal request",
+        progressStep: 0,
+        statusDates: [submissionDate],
+      },
+    }));
+    setTrackedWithdrawal(withdrawEmployer.id);
     setSuccessMessage("Withdrawal request submitted successfully.");
     cancelWithdrawal();
   };
@@ -705,8 +769,10 @@ function Dashboard({ onLogout, onPassbook }) {
               key={employer.id}
               employer={employer}
               claim={submittedClaims[employer.id] || employer.claim}
+              withdrawalRequest={withdrawalRequests[employer.id]}
               expanded={open === employer.id}
               isTrackingClaim={trackedClaim === employer.id}
+              isTrackingWithdrawal={trackedWithdrawal === employer.id}
               onToggle={() =>
                 setOpen(open === employer.id ? null : employer.id)
               }
@@ -721,6 +787,11 @@ function Dashboard({ onLogout, onPassbook }) {
                 setWithdrawalForm(emptyWithdrawalForm);
                 setShowWithdrawalConfirmation(false);
               }}
+              onTrackWithdrawal={() =>
+                setTrackedWithdrawal(
+                  trackedWithdrawal === employer.id ? null : employer.id,
+                )
+              }
               onTrackClaim={() =>
                 setTrackedClaim(
                   trackedClaim === employer.id ? null : employer.id,

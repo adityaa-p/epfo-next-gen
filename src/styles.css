@@ -1500,3 +1500,16 @@ h3 {
     margin-left: 0;
   }
 }
+
+.withdrawal-progress {
+  background: #eef5f2;
+}
+
+.withdrawal-progress .status-dot {
+  background: #3f8f76;
+}
+
+.withdrawal-progress-steps li {
+  flex: 1;
+  min-width: 0;
+}

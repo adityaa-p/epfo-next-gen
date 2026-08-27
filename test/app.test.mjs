@@ -63,6 +63,10 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "12 contributions from April to March",
     "Choose employer",
     "allowEmployerSelection",
+    "Track request progress",
+    "Hide request progress",
+    "Withdrawal request status",
+    "Approved by field office",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }
