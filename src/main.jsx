@@ -170,7 +170,7 @@ function ClaimProgress({ claim }) {
   return (
     <section className="claim" aria-label={`${claim.type} status`}>
       <div className="claim-title">
-        <span className="status-dot" /> {claim.type}
+        <span className="status-dot" /> Claim status
       </div>
       <ol className="progress">
         {steps.map((step, i) => (
@@ -348,10 +348,10 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
     form.applicationType &&
     form.purpose &&
     requestedAmount > 0 &&
-    requestedAmount <= eligibleAmount &&
     form.address.trim() &&
     form.state &&
     form.district;
+  const canSubmit = Boolean(isComplete);
   const updateField = (field, value) =>
     onChange((current) => ({ ...current, [field]: value }));
 
@@ -490,7 +490,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
           </button>
           <button
             className="primary"
-            disabled={!isComplete}
+            disabled={!canSubmit}
             onClick={onContinue}
           >
             Submit
@@ -625,7 +625,7 @@ function EmployerCard({
               </button>
             ) : (
               <button className="secondary" onClick={onTransferClaim}>
-                Transfer Claim
+                Transfer Amount
               </button>
             )}
             {withdrawalRequest ? (
@@ -636,7 +636,7 @@ function EmployerCard({
               </button>
             ) : (
               <button className="primary" onClick={onWithdrawalRequest}>
-                Withdrawal Request
+                Withdraw Amount
               </button>
             )}
           </div>
@@ -1098,12 +1098,12 @@ const chatAnswers = [
   {
     keywords: ["transfer", "claim"],
     response:
-      "To transfer PF funds, expand the previous employer, select Transfer Claim, choose the destination employer, and confirm the request. You can track it from the same row after submission.",
+      "To transfer PF funds, expand the previous employer, select Transfer Amount, choose the destination employer, and confirm the request. You can track it from the same row after submission.",
   },
   {
     keywords: ["withdraw", "advance", "form-31"],
     response:
-      "Expand an employer and choose Withdrawal Request. Complete the PF Advance form, review the eligible amount, and confirm the submission. A tracking action appears after it is submitted.",
+      "Expand an employer and choose Withdraw Amount. Complete the PF Advance form, review the eligible amount, and confirm the submission. A tracking action appears after it is submitted.",
   },
   {
     keywords: ["passbook", "contribution"],

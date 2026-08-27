@@ -28,8 +28,9 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
   for (const feature of [
     "Send OTP",
     "Verify & continue",
-    "Transfer Claim",
-    "Withdrawal Request",
+    "Transfer Amount",
+    "Withdraw Amount",
+    "Claim status",
     "View complete passbook",
     "Total experience",
     "Track claim",
@@ -74,6 +75,7 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Member overview",
     "contribution-passbook",
     "verified-pill",
+    "canSubmit",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }
