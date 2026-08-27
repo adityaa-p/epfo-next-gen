@@ -54,6 +54,13 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Employee&apos;s address",
     "Submit withdrawal request?",
     "Withdrawal request submitted successfully.",
+    "Selected employer",
+    "Financial year",
+    "Wage month",
+    "EPF wages",
+    "EPS wages",
+    "Total Contributions for the year",
+    "12 contributions from April to March",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

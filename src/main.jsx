@@ -100,6 +100,44 @@ const emptyWithdrawalForm = {
   state: "",
   district: "",
 };
+const financialYears = [2026, 2025, 2024];
+const financialYearLabel = (startYear) =>
+  `${startYear}–${String(startYear + 1).slice(-2)}`;
+const buildPassbookEntries = (employer, startYear) => {
+  const months = [
+    ["April", 3],
+    ["May", 4],
+    ["June", 5],
+    ["July", 6],
+    ["August", 7],
+    ["September", 8],
+    ["October", 9],
+    ["November", 10],
+    ["December", 11],
+    ["January", 0],
+    ["February", 1],
+    ["March", 2],
+  ];
+  const employerIndex = employers.findIndex((item) => item.id === employer.id);
+  const epfWages = 30000 - employerIndex * 5000;
+  const epsWages = 15000;
+
+  return months.map(([month, monthIndex], index) => {
+    const wageYear = index < 9 ? startYear : startYear + 1;
+    const transactionMonthIndex = (monthIndex + 1) % 12;
+    const transactionYear =
+      transactionMonthIndex === 0 ? wageYear + 1 : wageYear;
+    return {
+      wageMonth: `${month} ${wageYear}`,
+      transactionDate: `10 ${new Intl.DateTimeFormat("en-IN", { month: "long" }).format(new Date(transactionYear, transactionMonthIndex, 10))} ${transactionYear}`,
+      epfWages,
+      epsWages,
+      employeeShare: Math.round(epfWages * 0.12),
+      employerShare: Math.round(epfWages * 0.0367),
+      pensionShare: Math.round(epsWages * 0.0833),
+    };
+  });
+};
 const money = (amount) =>
   new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0,
@@ -672,7 +710,7 @@ function Dashboard({ onLogout, onPassbook }) {
               onToggle={() =>
                 setOpen(open === employer.id ? null : employer.id)
               }
-              onPassbook={onPassbook}
+              onPassbook={() => onPassbook(employer)}
               onTransferClaim={() => {
                 setTransferEmployer(employer);
                 setTargetEmployer(null);
@@ -691,7 +729,11 @@ function Dashboard({ onLogout, onPassbook }) {
             />
           ))}
         </section>
-        <button id="passbook" className="passbook" onClick={onPassbook}>
+        <button
+          id="passbook"
+          className="passbook"
+          onClick={() => onPassbook(employers[0])}
+        >
           <span>▤</span>
           <span>
             <strong>View complete passbook</strong>
@@ -741,21 +783,121 @@ function Dashboard({ onLogout, onPassbook }) {
     </>
   );
 }
-function Passbook({ onBack, onLogout }) {
+function Passbook({ employer, onBack, onLogout }) {
+  const [financialYear, setFinancialYear] = useState(financialYears[0]);
+  const entries = buildPassbookEntries(employer, financialYear);
+  const totals = entries.reduce(
+    (sum, entry) => ({
+      epfWages: sum.epfWages + entry.epfWages,
+      epsWages: sum.epsWages + entry.epsWages,
+      employeeShare: sum.employeeShare + entry.employeeShare,
+      employerShare: sum.employerShare + entry.employerShare,
+      pensionShare: sum.pensionShare + entry.pensionShare,
+    }),
+    {
+      epfWages: 0,
+      epsWages: 0,
+      employeeShare: 0,
+      employerShare: 0,
+      pensionShare: 0,
+    },
+  );
+
   return (
     <>
       <Header onLogout={onLogout} />
-      <main className="placeholder">
-        <p className="eyebrow">PASSBOOK</p>
-        <h1>Your complete passbook</h1>
-        <p>
-          This is where every contribution, transfer and withdrawal transaction
-          will appear.
-        </p>
-        <div className="placeholder-icon">▤</div>
-        <button className="secondary" onClick={onBack}>
-          ← Back to employments
+      <main className="passbook-page">
+        <button className="passbook-back" onClick={onBack}>
+          <span aria-hidden>←</span> Back to employments
         </button>
+
+        <div className="passbook-heading">
+          <div>
+            <p className="eyebrow">COMPLETE PASSBOOK</p>
+            <h1>PF contributions</h1>
+            <p>
+              Review monthly deposits and annual totals for this employment.
+            </p>
+          </div>
+          <label className="year-selector">
+            <span>Financial year</span>
+            <select
+              value={financialYear}
+              onChange={(event) => setFinancialYear(Number(event.target.value))}
+            >
+              {financialYears.map((year) => (
+                <option key={year} value={year}>
+                  FY {financialYearLabel(year)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <section className="passbook-employer" aria-label="Selected employer">
+          <span className="avatar">{employer.company[0]}</span>
+          <div>
+            <small>Selected employer</small>
+            <strong>{employer.company}</strong>
+            <span>Member ID: {employer.memberId}</span>
+          </div>
+        </section>
+
+        <section
+          className="annual-passbook"
+          aria-labelledby="annual-table-title"
+        >
+          <div className="annual-table-heading">
+            <div>
+              <h2 id="annual-table-title">
+                Financial year {financialYearLabel(financialYear)}
+              </h2>
+              <p>12 contributions from April to March</p>
+            </div>
+            <span className="entry-count">12 entries</span>
+          </div>
+          <div className="passbook-table-wrap">
+            <table className="passbook-table">
+              <thead>
+                <tr>
+                  <th scope="col">Wage month</th>
+                  <th scope="col">Transaction date</th>
+                  <th scope="col">EPF wages</th>
+                  <th scope="col">EPS wages</th>
+                  <th scope="col">Employee share (12%)</th>
+                  <th scope="col">Employer share (3.67%)</th>
+                  <th scope="col">Pension share (8.33%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry) => (
+                  <tr key={entry.wageMonth}>
+                    <th scope="row">{entry.wageMonth}</th>
+                    <td>{entry.transactionDate}</td>
+                    <td>{money(entry.epfWages)}</td>
+                    <td>{money(entry.epsWages)}</td>
+                    <td>{money(entry.employeeShare)}</td>
+                    <td>{money(entry.employerShare)}</td>
+                    <td>{money(entry.pensionShare)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colSpan="2" scope="row">
+                    Total Contributions for the year (
+                    {financialYearLabel(financialYear)})
+                  </th>
+                  <td>{money(totals.epfWages)}</td>
+                  <td>{money(totals.epsWages)}</td>
+                  <td>{money(totals.employeeShare)}</td>
+                  <td>{money(totals.employerShare)}</td>
+                  <td>{money(totals.pensionShare)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
       </main>
     </>
   );
@@ -846,16 +988,17 @@ function Login({ onVerify }) {
 }
 function App() {
   const [signedIn, setSignedIn] = useState(false);
-  const [passbook, setPassbook] = useState(false);
+  const [passbookEmployer, setPassbookEmployer] = useState(null);
   if (!signedIn) return <Login onVerify={() => setSignedIn(true)} />;
-  return passbook ? (
+  return passbookEmployer ? (
     <Passbook
-      onBack={() => setPassbook(false)}
+      employer={passbookEmployer}
+      onBack={() => setPassbookEmployer(null)}
       onLogout={() => setSignedIn(false)}
     />
   ) : (
     <Dashboard
-      onPassbook={() => setPassbook(true)}
+      onPassbook={setPassbookEmployer}
       onLogout={() => setSignedIn(false)}
     />
   );

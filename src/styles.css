@@ -1193,3 +1193,249 @@ h3 {
     border-left: 0;
   }
 }
+
+.passbook-page {
+  max-width: 1280px;
+}
+
+.passbook-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #176c5d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.passbook-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.passbook-heading h1 {
+  margin-bottom: 8px;
+}
+
+.passbook-heading > div > p:last-child,
+.annual-table-heading p {
+  margin-bottom: 0;
+  color: #6c817d;
+}
+
+.year-selector {
+  flex: none;
+  min-width: 190px;
+  color: #55756d;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.year-selector span {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.year-selector select {
+  appearance: none;
+  width: 100%;
+  padding: 11px 40px 11px 13px;
+  border: 1px solid #a9c7bc;
+  border-radius: 9px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23315d50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  color: #214a42;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.year-selector select:focus {
+  border-color: #176c5d;
+  outline: none;
+  box-shadow: 0 0 0 3px #176c5d1f;
+}
+
+.passbook-employer {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 30px 0 18px;
+  padding: 17px 19px;
+  border: 1px solid #cbded4;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #edf6e7, #f8fbf7);
+}
+
+.passbook-employer .avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.passbook-employer small,
+.passbook-employer strong,
+.passbook-employer div > span {
+  display: block;
+}
+
+.passbook-employer small {
+  margin-bottom: 2px;
+  color: #657b76;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.passbook-employer strong {
+  color: #183f37;
+  font-size: 0.95rem;
+}
+
+.passbook-employer div > span {
+  margin-top: 2px;
+  color: #55756d;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.annual-passbook {
+  overflow: hidden;
+  border: 1px solid #d7e3dc;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 3px 12px #173b320d;
+}
+
+.annual-table-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 19px 20px;
+  border-bottom: 1px solid #dfe8e3;
+}
+
+.annual-table-heading h2 {
+  font-size: 1.35rem;
+}
+
+.entry-count {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #edf5e4;
+  color: #356457;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.passbook-table-wrap {
+  overflow-x: auto;
+}
+
+.passbook-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.passbook-table th,
+.passbook-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #e7ece9;
+  color: #315d50;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.passbook-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #eaf3e8;
+  color: #42655c;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.passbook-table th:first-child,
+.passbook-table th:nth-child(2),
+.passbook-table td:nth-child(2) {
+  text-align: left;
+}
+
+.passbook-table tbody th {
+  color: #214a42;
+  font-weight: 700;
+}
+
+.passbook-table tbody tr:nth-child(even) {
+  background: #fafcf9;
+}
+
+.passbook-table tbody tr:hover {
+  background: #f3f8f1;
+}
+
+.passbook-table tfoot th,
+.passbook-table tfoot td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 0;
+  background: #dfeecb;
+  color: #214a42;
+  font-weight: 700;
+}
+
+.passbook-table tfoot th {
+  text-align: left;
+  white-space: normal;
+}
+
+@media (max-width: 650px) {
+  .passbook-heading {
+    display: block;
+  }
+
+  .year-selector {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .passbook-employer {
+    align-items: flex-start;
+    margin-top: 22px;
+    padding: 15px;
+  }
+
+  .annual-table-heading {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .annual-table-heading h2 {
+    font-size: 1.16rem;
+  }
+
+  .passbook-table th,
+  .passbook-table td {
+    padding: 11px 12px;
+  }
+}
