@@ -579,6 +579,18 @@ function EmployerCard({
               <h3>Recent contributions</h3>
               <p>Last 3 credited months</p>
             </div>
+            <button
+              className="contribution-passbook"
+              onClick={onPassbook}
+              aria-label="View complete passbook"
+            >
+              <span className="contribution-passbook-icon" aria-hidden>
+                ▤
+              </span>
+              <span className="contribution-passbook-label">
+                View complete passbook
+              </span>
+            </button>
           </div>
           <div className="contributions">
             <table>
@@ -601,12 +613,6 @@ function EmployerCard({
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="detail-passbook-row">
-            <button className="detail-passbook" onClick={onPassbook}>
-              <span aria-hidden>▤</span> View complete passbook{" "}
-              <span aria-hidden>→</span>
-            </button>
           </div>
           {isTrackingClaim && <ClaimProgress claim={claim} />}
           {isTrackingWithdrawal && (
@@ -728,22 +734,15 @@ function Dashboard({ onLogout, onPassbook }) {
     <>
       <Header onLogout={onLogout} />
       <main id="dashboard">
-        <section className="uan-banner" aria-label="Universal Account Number">
-          <div>
-            <small>Universal Account Number (UAN)</small>
-            <strong>{uan}</strong>
-          </div>
-          <span>
-            <span aria-hidden>✓</span> Verified
-          </span>
-        </section>
         <div className="welcome">
           <div>
             <p className="eyebrow">MEMBER HOME</p>
             <h1>Good morning, Ananya.</h1>
             <p>Here’s a clear view of your provident fund accounts.</p>
           </div>
-          <div className="dashboard-summary">
+        </div>
+        <section className="member-overview" aria-label="Member overview">
+          <div className="overview-metrics">
             <div className="total">
               <small>Combined balance</small>
               <strong>{money(combinedBalance)}</strong>
@@ -755,7 +754,19 @@ function Dashboard({ onLogout, onPassbook }) {
               </strong>
             </div>
           </div>
-        </div>
+          <div className="overview-uan">
+            <div className="overview-uan-icon" aria-hidden>
+              U
+            </div>
+            <div>
+              <small>Universal Account Number (UAN)</small>
+              <strong>{uan}</strong>
+            </div>
+            <span className="verified-pill">
+              <span aria-hidden>✓</span> Verified
+            </span>
+          </div>
+        </section>
         <section className="accounts">
           <div className="accounts-title">
             <div>
