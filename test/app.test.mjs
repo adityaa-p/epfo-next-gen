@@ -42,6 +42,11 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Universal Account Number (UAN)",
     "Total service:",
     "01 April 2019 — 31 December 2021",
+    "Transfer your PF balance",
+    "Select an employer",
+    "Submit transfer claim?",
+    "Yes",
+    "Transfer claim submitted successfully.",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

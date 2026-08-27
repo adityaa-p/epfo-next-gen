@@ -763,3 +763,277 @@ h3 {
     padding: 5px 8px;
   }
 }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #082f2a99;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: min(100%, 720px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 28px;
+  border: 1px solid #d8e4de;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px #06221c45;
+}
+
+.modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.modal-heading h2 {
+  margin-bottom: 5px;
+}
+
+.modal-heading p:not(.eyebrow),
+.confirmation-modal p {
+  margin-bottom: 0;
+  color: #657b76;
+}
+
+.modal-close {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #d8e4de;
+  border-radius: 50%;
+  background: #f7faf7;
+  color: #41645c;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.transfer-parties {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.transfer-party {
+  min-height: 168px;
+  padding: 18px;
+  border: 1px solid #dce7e1;
+  border-radius: 12px;
+  background: #f8faf7;
+}
+
+.transfer-party strong,
+.transfer-party b,
+.transfer-party small {
+  display: block;
+}
+
+.transfer-party strong {
+  min-height: 46px;
+  margin: 9px 0 15px;
+  color: #173f38;
+}
+
+.transfer-party small {
+  color: #70857f;
+  font-size: 0.68rem;
+}
+
+.transfer-party b {
+  margin-top: 3px;
+  color: #315d50;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.party-label {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #dfeecb;
+  color: #356457;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.transfer-arrow {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0efc5;
+  color: #285a4e;
+  font-weight: 700;
+}
+
+.target-party label {
+  display: block;
+  margin-bottom: 9px;
+  color: #315d50;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.target-party select {
+  width: 100%;
+  padding: 10px 35px 10px 11px;
+  border: 1px solid #b9cec6;
+  border-radius: 8px;
+  background: #fff;
+  color: #234e45;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.selected-member {
+  margin-top: 17px;
+  padding-top: 13px;
+  border-top: 1px solid #dce7e1;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.primary:disabled {
+  border-color: #9eb5ae;
+  background: #9eb5ae;
+  cursor: not-allowed;
+}
+
+.confirmation-backdrop {
+  z-index: 110;
+}
+
+.confirmation-modal {
+  width: min(100%, 460px);
+  text-align: center;
+}
+
+.confirmation-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #e0efc5;
+  color: #285a4e;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.confirmation-modal h2 {
+  margin-bottom: 8px;
+}
+
+.confirmation-actions {
+  justify-content: center;
+}
+
+.success-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100vw - 48px);
+  padding: 13px 17px;
+  border-radius: 10px;
+  background: #166b50;
+  color: #fff;
+  box-shadow: 0 14px 35px #0c382c40;
+  font-size: 0.82rem;
+  font-weight: 700;
+  animation: toast-in 250ms ease-out;
+}
+
+.success-toast span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e0efc5;
+  color: #166b50;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 650px) {
+  .modal-backdrop {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .modal-card {
+    max-height: calc(100vh - 24px);
+    padding: 22px 18px;
+    border-radius: 16px 16px 10px 10px;
+  }
+
+  .transfer-parties {
+    grid-template-columns: 1fr;
+  }
+
+  .transfer-arrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .transfer-party {
+    min-height: auto;
+  }
+
+  .transfer-party strong {
+    min-height: 0;
+  }
+
+  .modal-actions button {
+    flex: 1;
+  }
+
+  .success-toast {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-toast {
+    animation: none;
+  }
+}

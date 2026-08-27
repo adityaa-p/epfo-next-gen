@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -123,20 +123,147 @@ function ClaimProgress({ claim }) {
           >
             <span>{i <= claim.progressStep ? "✓" : i + 1}</span>
             <small>{step}</small>
-            <time>{claim.statusDates[i]}</time>
+            {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
           </li>
         ))}
       </ol>
     </section>
   );
 }
+
+function TransferClaimModal({
+  employer,
+  targetEmployer,
+  onCancel,
+  onContinue,
+  onTargetChange,
+}) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        className="modal-card transfer-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transfer-modal-title"
+      >
+        <div className="modal-heading">
+          <div>
+            <p className="eyebrow">PF TRANSFER</p>
+            <h2 id="transfer-modal-title">Transfer your PF balance</h2>
+            <p>
+              Confirm the source and choose the employer receiving the funds.
+            </p>
+          </div>
+          <button
+            className="modal-close"
+            onClick={onCancel}
+            aria-label="Close transfer claim dialog"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="transfer-parties">
+          <div className="transfer-party source-party">
+            <span className="party-label">From</span>
+            <strong>{employer.company}</strong>
+            <small>Member ID</small>
+            <b>{employer.memberId}</b>
+          </div>
+
+          <span className="transfer-arrow" aria-hidden>
+            →
+          </span>
+
+          <div className="transfer-party target-party">
+            <label htmlFor="target-employer">Transfer to</label>
+            <select
+              id="target-employer"
+              value={targetEmployer?.id || ""}
+              onChange={(event) =>
+                onTargetChange(
+                  employers.find(
+                    (candidate) => candidate.id === event.target.value,
+                  ) || null,
+                )
+              }
+            >
+              <option value="">Select an employer</option>
+              {employers
+                .filter((candidate) => candidate.id !== employer.id)
+                .map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.company}
+                  </option>
+                ))}
+            </select>
+            {targetEmployer && (
+              <div className="selected-member">
+                <small>Member ID</small>
+                <b>{targetEmployer.memberId}</b>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button className="secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            className="primary"
+            disabled={!targetEmployer}
+            onClick={onContinue}
+          >
+            Submit
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
+  return (
+    <div className="modal-backdrop confirmation-backdrop" role="presentation">
+      <section
+        className="modal-card confirmation-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-modal-title"
+        aria-describedby="confirmation-modal-description"
+      >
+        <span className="confirmation-icon" aria-hidden>
+          ?
+        </span>
+        <h2 id="confirmation-modal-title">Submit transfer claim?</h2>
+        <p id="confirmation-modal-description">
+          Do you want to submit the claim to transfer funds from{" "}
+          <strong>{sourceEmployer.company}</strong> to{" "}
+          <strong>{targetEmployer.company}</strong>?
+        </p>
+        <div className="modal-actions confirmation-actions">
+          <button className="secondary" onClick={onNo}>
+            No
+          </button>
+          <button className="primary" onClick={onYes}>
+            Yes
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function EmployerCard({
   employer,
+  claim,
   expanded,
   isTrackingClaim,
   onToggle,
   onPassbook,
   onTrackClaim,
+  onTransferClaim,
 }) {
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
@@ -200,15 +327,16 @@ function EmployerCard({
               <span aria-hidden>→</span>
             </button>
           </div>
-          {isTrackingClaim && <ClaimProgress claim={employer.claim} />}
+          {isTrackingClaim && <ClaimProgress claim={claim} />}
           <div className="actions">
-            {employer.balance === 0 &&
-            employer.claim?.claimStatus === "Processed" ? (
+            {claim ? (
               <button className="secondary" onClick={onTrackClaim}>
                 {isTrackingClaim ? "Hide claim progress" : "Track claim"}
               </button>
             ) : (
-              <button className="secondary">Transfer Claim</button>
+              <button className="secondary" onClick={onTransferClaim}>
+                Transfer Claim
+              </button>
             )}
             <button className="primary">Withdrawal Request</button>
           </div>
@@ -220,6 +348,11 @@ function EmployerCard({
 function Dashboard({ onLogout, onPassbook }) {
   const [open, setOpen] = useState("u112");
   const [trackedClaim, setTrackedClaim] = useState(null);
+  const [submittedClaims, setSubmittedClaims] = useState({});
+  const [transferEmployer, setTransferEmployer] = useState(null);
+  const [targetEmployer, setTargetEmployer] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const combinedBalance = employers.reduce(
     (sum, employer) => sum + employer.balance,
     0,
@@ -230,6 +363,41 @@ function Dashboard({ onLogout, onPassbook }) {
   );
   const totalYears = Math.floor(totalServiceMonths / 12);
   const remainingMonths = totalServiceMonths % 12;
+
+  useEffect(() => {
+    if (!successMessage) return undefined;
+    const timeout = globalThis.setTimeout(() => setSuccessMessage(""), 3000);
+    return () => globalThis.clearTimeout(timeout);
+  }, [successMessage]);
+
+  const cancelTransfer = () => {
+    setTransferEmployer(null);
+    setTargetEmployer(null);
+    setShowConfirmation(false);
+  };
+
+  const submitTransferClaim = () => {
+    const submissionDate = new Intl.DateTimeFormat("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+    const claim = {
+      type: "Transfer claim",
+      claimStatus: "Submitted",
+      progressStep: 0,
+      statusDates: [submissionDate],
+      targetEmployerId: targetEmployer.id,
+    };
+
+    setSubmittedClaims((claims) => ({
+      ...claims,
+      [transferEmployer.id]: claim,
+    }));
+    setTrackedClaim(transferEmployer.id);
+    setSuccessMessage("Transfer claim submitted successfully.");
+    cancelTransfer();
+  };
 
   return (
     <>
@@ -275,12 +443,18 @@ function Dashboard({ onLogout, onPassbook }) {
             <EmployerCard
               key={employer.id}
               employer={employer}
+              claim={submittedClaims[employer.id] || employer.claim}
               expanded={open === employer.id}
               isTrackingClaim={trackedClaim === employer.id}
               onToggle={() =>
                 setOpen(open === employer.id ? null : employer.id)
               }
               onPassbook={onPassbook}
+              onTransferClaim={() => {
+                setTransferEmployer(employer);
+                setTargetEmployer(null);
+                setShowConfirmation(false);
+              }}
               onTrackClaim={() =>
                 setTrackedClaim(
                   trackedClaim === employer.id ? null : employer.id,
@@ -297,7 +471,29 @@ function Dashboard({ onLogout, onPassbook }) {
           </span>
           <b>→</b>
         </button>
+        {successMessage && (
+          <div className="success-toast" role="status" aria-live="polite">
+            <span aria-hidden>✓</span> {successMessage}
+          </div>
+        )}
       </main>
+      {transferEmployer && !showConfirmation && (
+        <TransferClaimModal
+          employer={transferEmployer}
+          targetEmployer={targetEmployer}
+          onCancel={cancelTransfer}
+          onContinue={() => setShowConfirmation(true)}
+          onTargetChange={setTargetEmployer}
+        />
+      )}
+      {transferEmployer && targetEmployer && showConfirmation && (
+        <ConfirmationModal
+          sourceEmployer={transferEmployer}
+          targetEmployer={targetEmployer}
+          onNo={() => setShowConfirmation(false)}
+          onYes={submitTransferClaim}
+        />
+      )}
     </>
   );
 }
