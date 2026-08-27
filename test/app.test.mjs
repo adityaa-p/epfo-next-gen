@@ -47,6 +47,13 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Submit transfer claim?",
     "Yes",
     "Transfer claim submitted successfully.",
+    "Withdrawal request",
+    "PF ADVANCE (FORM-31)",
+    "Purpose for which advance is required",
+    "Eligible Claim Amount: Rs",
+    "Employee&apos;s address",
+    "Submit withdrawal request?",
+    "Withdrawal request submitted successfully.",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

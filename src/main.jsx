@@ -85,7 +85,21 @@ const steps = [
   "Approved by field officer",
   "Done",
 ];
+const memberName = "Ananya Kapoor";
 const uan = "1009 2847 3612";
+const locations = {
+  Karnataka: ["Bengaluru Urban", "Mysuru", "Dharwad"],
+  Maharashtra: ["Mumbai Suburban", "Pune", "Nagpur"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+};
+const emptyWithdrawalForm = {
+  applicationType: "",
+  purpose: "",
+  amount: "",
+  address: "",
+  state: "",
+  district: "",
+};
 const money = (amount) =>
   new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0,
@@ -255,6 +269,197 @@ function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
   );
 }
 
+function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
+  const eligibleAmount = Math.floor(employer.balance * 0.8);
+  const requestedAmount = Number(form.amount);
+  const isComplete =
+    form.applicationType &&
+    form.purpose &&
+    requestedAmount > 0 &&
+    requestedAmount <= eligibleAmount &&
+    form.address.trim() &&
+    form.state &&
+    form.district;
+  const updateField = (field, value) =>
+    onChange((current) => ({ ...current, [field]: value }));
+
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        className="modal-card withdrawal-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="withdrawal-modal-title"
+      >
+        <div className="modal-heading">
+          <div>
+            <p className="eyebrow">ONLINE CLAIM</p>
+            <h2 id="withdrawal-modal-title">Withdrawal request</h2>
+          </div>
+          <button
+            className="modal-close"
+            onClick={onCancel}
+            aria-label="Close withdrawal request dialog"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="claimant-summary">
+          <div>
+            <small>Member name</small>
+            <strong>{memberName}</strong>
+          </div>
+          <div>
+            <small>UAN</small>
+            <strong>{uan}</strong>
+          </div>
+        </div>
+
+        <div className="withdrawal-form">
+          <label>
+            I want to apply for
+            <select
+              value={form.applicationType}
+              onChange={(event) =>
+                updateField("applicationType", event.target.value)
+              }
+            >
+              <option value="">Select claim type</option>
+              <option value="PF ADVANCE (FORM-31)">PF ADVANCE (FORM-31)</option>
+            </select>
+          </label>
+
+          <label>
+            Purpose for which advance is required
+            <select
+              value={form.purpose}
+              onChange={(event) => updateField("purpose", event.target.value)}
+            >
+              <option value="">Select purpose</option>
+              <option value="Illness">Illness</option>
+              <option value="Education">Education</option>
+              <option value="Unemployment">Unemployment</option>
+            </select>
+          </label>
+
+          <label>
+            Amount of advance required (in Rs.)
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={form.amount}
+              onChange={(event) =>
+                updateField("amount", event.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Enter amount"
+            />
+            <small className="eligible-amount">
+              Eligible Claim Amount: Rs {money(eligibleAmount)} (Amount subject
+              to change during processing at EPFO office)
+            </small>
+          </label>
+
+          <label>
+            Employee&apos;s address
+            <textarea
+              rows="3"
+              value={form.address}
+              onChange={(event) => updateField("address", event.target.value)}
+              placeholder="Enter complete address"
+            />
+          </label>
+
+          <div className="location-fields">
+            <label>
+              State
+              <select
+                value={form.state}
+                onChange={(event) =>
+                  onChange((current) => ({
+                    ...current,
+                    state: event.target.value,
+                    district: "",
+                  }))
+                }
+              >
+                <option value="">Select state</option>
+                {Object.keys(locations).map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              District
+              <select
+                value={form.district}
+                disabled={!form.state}
+                onChange={(event) =>
+                  updateField("district", event.target.value)
+                }
+              >
+                <option value="">Select district</option>
+                {(locations[form.state] || []).map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button className="secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            className="primary"
+            disabled={!isComplete}
+            onClick={onContinue}
+          >
+            Submit
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WithdrawalConfirmationModal({ form, onNo, onYes }) {
+  return (
+    <div className="modal-backdrop confirmation-backdrop" role="presentation">
+      <section
+        className="modal-card confirmation-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="withdrawal-confirmation-title"
+        aria-describedby="withdrawal-confirmation-description"
+      >
+        <span className="confirmation-icon" aria-hidden>
+          ?
+        </span>
+        <h2 id="withdrawal-confirmation-title">Submit withdrawal request?</h2>
+        <p id="withdrawal-confirmation-description">
+          Do you want to submit your {form.applicationType} claim for Rs{" "}
+          {money(Number(form.amount))}?
+        </p>
+        <div className="modal-actions confirmation-actions">
+          <button className="secondary" onClick={onNo}>
+            No
+          </button>
+          <button className="primary" onClick={onYes}>
+            Yes
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function EmployerCard({
   employer,
   claim,
@@ -264,6 +469,7 @@ function EmployerCard({
   onPassbook,
   onTrackClaim,
   onTransferClaim,
+  onWithdrawalRequest,
 }) {
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
@@ -338,7 +544,9 @@ function EmployerCard({
                 Transfer Claim
               </button>
             )}
-            <button className="primary">Withdrawal Request</button>
+            <button className="primary" onClick={onWithdrawalRequest}>
+              Withdrawal Request
+            </button>
           </div>
         </div>
       )}
@@ -352,6 +560,10 @@ function Dashboard({ onLogout, onPassbook }) {
   const [transferEmployer, setTransferEmployer] = useState(null);
   const [targetEmployer, setTargetEmployer] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [withdrawEmployer, setWithdrawEmployer] = useState(null);
+  const [withdrawalForm, setWithdrawalForm] = useState(emptyWithdrawalForm);
+  const [showWithdrawalConfirmation, setShowWithdrawalConfirmation] =
+    useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const combinedBalance = employers.reduce(
     (sum, employer) => sum + employer.balance,
@@ -397,6 +609,17 @@ function Dashboard({ onLogout, onPassbook }) {
     setTrackedClaim(transferEmployer.id);
     setSuccessMessage("Transfer claim submitted successfully.");
     cancelTransfer();
+  };
+
+  const cancelWithdrawal = () => {
+    setWithdrawEmployer(null);
+    setWithdrawalForm(emptyWithdrawalForm);
+    setShowWithdrawalConfirmation(false);
+  };
+
+  const submitWithdrawalRequest = () => {
+    setSuccessMessage("Withdrawal request submitted successfully.");
+    cancelWithdrawal();
   };
 
   return (
@@ -455,6 +678,11 @@ function Dashboard({ onLogout, onPassbook }) {
                 setTargetEmployer(null);
                 setShowConfirmation(false);
               }}
+              onWithdrawalRequest={() => {
+                setWithdrawEmployer(employer);
+                setWithdrawalForm(emptyWithdrawalForm);
+                setShowWithdrawalConfirmation(false);
+              }}
               onTrackClaim={() =>
                 setTrackedClaim(
                   trackedClaim === employer.id ? null : employer.id,
@@ -492,6 +720,22 @@ function Dashboard({ onLogout, onPassbook }) {
           targetEmployer={targetEmployer}
           onNo={() => setShowConfirmation(false)}
           onYes={submitTransferClaim}
+        />
+      )}
+      {withdrawEmployer && !showWithdrawalConfirmation && (
+        <WithdrawalModal
+          employer={withdrawEmployer}
+          form={withdrawalForm}
+          onCancel={cancelWithdrawal}
+          onChange={setWithdrawalForm}
+          onContinue={() => setShowWithdrawalConfirmation(true)}
+        />
+      )}
+      {withdrawEmployer && showWithdrawalConfirmation && (
+        <WithdrawalConfirmationModal
+          form={withdrawalForm}
+          onNo={() => setShowWithdrawalConfirmation(false)}
+          onYes={submitWithdrawalRequest}
         />
       )}
     </>
