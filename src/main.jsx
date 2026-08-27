@@ -349,7 +349,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={form.amount}
+              value={form.amount ? money(Number(form.amount)) : ""}
               onChange={(event) =>
                 updateField("amount", event.target.value.replace(/\D/g, ""))
               }
