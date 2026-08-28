@@ -76,6 +76,10 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "contribution-passbook",
     "verified-pill",
     "canSubmit",
+    "Profile menu",
+    "Change phone no",
+    "E-Nomination",
+    "UAN Card",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

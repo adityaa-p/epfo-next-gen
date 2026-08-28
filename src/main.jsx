@@ -155,14 +155,72 @@ const serviceDuration = (months) => {
 };
 
 function Header({ onLogout }) {
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   return (
     <header>
       <a className="brand" href="#dashboard" aria-label="EPFO One home">
         <span>e</span> EPFO <b>one</b>
       </a>
-      <button className="profile" onClick={onLogout} aria-label="Log out">
-        AK
-      </button>
+      <div className="profile-menu-wrap">
+        <button
+          className="profile"
+          onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+          aria-label={
+            isProfileMenuOpen ? "Close profile menu" : "Open profile menu"
+          }
+          aria-haspopup="menu"
+          aria-expanded={isProfileMenuOpen}
+        >
+          AK
+        </button>
+        {isProfileMenuOpen && (
+          <div className="profile-menu" role="menu" aria-label="Profile menu">
+            <div className="profile-menu-summary">
+              <span>AK</span>
+              <div>
+                <strong>{memberName}</strong>
+                <small>UAN · {uan}</small>
+              </div>
+            </div>
+            <div className="profile-menu-options">
+              <button
+                role="menuitem"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <span aria-hidden>◉</span> Profile
+              </button>
+              <button
+                role="menuitem"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <span aria-hidden>✓</span> KYC
+              </button>
+              <button
+                role="menuitem"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <span aria-hidden>⌕</span> Change phone no
+              </button>
+              <button
+                role="menuitem"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <span aria-hidden>♧</span> E-Nomination
+              </button>
+              <button
+                role="menuitem"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <span aria-hidden>▤</span> UAN Card
+              </button>
+            </div>
+            <button className="profile-menu-logout" onClick={onLogout}>
+              <span aria-hidden>↪</span> Sign out
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   );
 }
