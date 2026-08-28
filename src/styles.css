@@ -2128,3 +2128,82 @@ h3 {
     animation: none;
   }
 }
+
+.progress .rejected {
+  color: #a5413a;
+}
+
+.progress .rejected > span {
+  border-color: #c94f45;
+  background: #c94f45;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.rejection-link {
+  display: block;
+  margin: 4px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #a5413a;
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: normal;
+}
+
+.rejection-link:hover,
+.rejection-link:focus-visible {
+  color: #7d2f2a;
+  outline: none;
+}
+
+.rejection-backdrop {
+  z-index: 140;
+}
+
+.rejection-modal {
+  width: min(100%, 500px);
+  text-align: center;
+}
+
+.rejection-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #f9e5e2;
+  color: #b13f37;
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.rejection-modal h2 {
+  margin-bottom: 10px;
+}
+
+.rejection-modal > p:not(.eyebrow) {
+  margin-bottom: 14px;
+  color: #5f7470;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.rejection-modal > small {
+  display: inline-block;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: #f6f7f5;
+  color: #748681;
+  font-size: 0.66rem;
+}
+
+.rejection-modal .modal-actions {
+  justify-content: center;
+}

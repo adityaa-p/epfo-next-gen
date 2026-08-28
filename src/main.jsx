@@ -76,6 +76,36 @@ const employers = [
       { date: "01 January 2019", employee: 2100, employer: 770, pension: 1330 },
     ],
   },
+  {
+    id: "u029",
+    company: "BluePeak Logistics Pvt. Ltd.",
+    dates: "01 January 2014 — 30 June 2016",
+    memberId: "KN/BN/0004821/002",
+    balance: 58320,
+    serviceMonths: 30,
+    contributions: [
+      { date: "01 June 2016", employee: 1800, employer: 660, pension: 1140 },
+      { date: "01 May 2016", employee: 1800, employer: 660, pension: 1140 },
+      { date: "01 April 2016", employee: 1800, employer: 660, pension: 1140 },
+    ],
+    claim: {
+      type: "Transfer claim",
+      claimStatus: "Rejected",
+      progressStep: 3,
+      rejectedAt: 4,
+      statusDates: [
+        "04 Jul 2016",
+        "05 Jul 2016",
+        "08 Jul 2016",
+        "11 Jul 2016",
+        "15 Jul 2016",
+      ],
+      rejectionTitle: "Transfer claim rejected by field office",
+      rejectionMessage:
+        "The member name in the previous establishment record does not match the name registered against the current UAN. Please ask the previous employer to correct the member details and submit a fresh transfer request.",
+      rejectionReference: "Rejection reference: FO/BN/2016/0715/284",
+    },
+  },
 ];
 const steps = [
   "Submitted",
@@ -225,25 +255,76 @@ function Header({ onLogout }) {
   );
 }
 function ClaimProgress({ claim }) {
+  const [showRejectionDetails, setShowRejectionDetails] = useState(false);
+
   return (
-    <section className="claim" aria-label={`${claim.type} status`}>
-      <div className="claim-title">
-        <span className="status-dot" /> Claim status
-      </div>
-      <ol className="progress">
-        {steps.map((step, i) => (
-          <li
-            key={step}
-            className={i <= claim.progressStep ? "complete" : ""}
-            style={{ "--step": i }}
-          >
-            <span>{i <= claim.progressStep ? "✓" : i + 1}</span>
-            <small>{step}</small>
-            {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
-          </li>
-        ))}
-      </ol>
-    </section>
+    <>
+      <section className="claim" aria-label={`${claim.type} status`}>
+        <div className="claim-title">
+          <span className="status-dot" /> Claim status
+        </div>
+        <ol className="progress">
+          {steps.map((step, i) => {
+            const isRejected = i === claim.rejectedAt;
+            const isComplete = i <= claim.progressStep;
+            return (
+              <li
+                key={step}
+                className={
+                  isRejected ? "rejected" : isComplete ? "complete" : ""
+                }
+                style={{ "--step": i }}
+              >
+                <span>{isRejected ? "×" : isComplete ? "✓" : i + 1}</span>
+                <small>{isRejected ? "Rejected by field office" : step}</small>
+                {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
+                {isRejected && (
+                  <button
+                    className="rejection-link"
+                    onClick={() => setShowRejectionDetails(true)}
+                  >
+                    View rejection reason
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+      {showRejectionDetails && (
+        <RejectionDetailsModal
+          claim={claim}
+          onClose={() => setShowRejectionDetails(false)}
+        />
+      )}
+    </>
+  );
+}
+
+function RejectionDetailsModal({ claim, onClose }) {
+  return (
+    <div className="modal-backdrop rejection-backdrop" role="presentation">
+      <section
+        className="modal-card rejection-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="rejection-modal-title"
+        aria-describedby="rejection-modal-message"
+      >
+        <span className="rejection-modal-icon" aria-hidden>
+          ×
+        </span>
+        <p className="eyebrow">CLAIM UPDATE</p>
+        <h2 id="rejection-modal-title">{claim.rejectionTitle}</h2>
+        <p id="rejection-modal-message">{claim.rejectionMessage}</p>
+        <small>{claim.rejectionReference}</small>
+        <div className="modal-actions">
+          <button className="primary" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
