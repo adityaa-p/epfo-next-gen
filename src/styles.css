@@ -2207,3 +2207,53 @@ h3 {
 .rejection-modal .modal-actions {
   justify-content: center;
 }
+
+/* Keep long employer names readable inside narrow employer rows. */
+.company,
+.company > span:last-child {
+  min-width: 0;
+}
+
+.company strong {
+  max-width: 100%;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+@media (max-width: 650px) {
+  .employer-summary {
+    column-gap: 10px;
+  }
+
+  .company {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .company > span:last-child {
+    display: block;
+    width: 100%;
+    padding-right: 2px;
+  }
+
+  .company strong {
+    display: block;
+    width: 100%;
+    color: #183f37;
+    font-size: 0.9rem;
+    white-space: normal;
+  }
+
+  .company .employment-dates {
+    margin-top: 4px;
+    line-height: 1.35;
+    white-space: normal;
+  }
+
+  .company .row-service {
+    max-width: 100%;
+    line-height: 1.3;
+    white-space: normal;
+  }
+}
