@@ -160,11 +160,13 @@ h3 {
   padding: 18px;
   display: grid;
   grid-template-columns: 1fr auto 20px;
+  grid-template-areas: "company balance chevron";
   gap: 16px;
   text-align: left;
   align-items: center;
 }
 .company {
+  grid-area: company;
   display: flex;
   gap: 12px;
   align-items: center;
@@ -186,6 +188,7 @@ h3 {
   font-size: 1.25rem;
 }
 .balance {
+  grid-area: balance;
   text-align: right;
 }
 .balance strong {
@@ -197,6 +200,7 @@ h3 {
   font-size: 0.65rem !important;
 }
 .chevron {
+  grid-area: chevron;
   font-size: 1.35rem;
   transition: 0.2s;
 }
@@ -463,16 +467,19 @@ h3 {
     width: 100%;
   }
   .employer-summary {
-    grid-template-columns: 1fr 15px;
+    grid-template-columns: minmax(0, 1fr) 20px;
+    grid-template-areas:
+      "company chevron"
+      "balance balance";
     padding: 15px;
   }
   .balance {
-    grid-column: 1;
     text-align: left;
     margin-left: 47px;
   }
   .chevron {
-    grid-row: 1;
+    align-self: start;
+    justify-self: end;
   }
   .detail {
     padding: 18px 14px;
@@ -2223,17 +2230,25 @@ h3 {
 
 @media (max-width: 650px) {
   .employer-summary {
-    column-gap: 10px;
+    position: relative;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
 
   .company {
+    order: 1;
     width: 100%;
     align-items: flex-start;
+    padding-right: 28px;
   }
 
   .company > span:last-child {
     display: block;
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
     padding-right: 2px;
   }
 
@@ -2255,5 +2270,144 @@ h3 {
     max-width: 100%;
     line-height: 1.3;
     white-space: normal;
+  }
+
+  .balance {
+    order: 2;
+    width: calc(100% - 47px);
+    margin-left: 47px;
+  }
+
+  .chevron {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 1;
+  }
+}
+
+/* Employer summary uses semantic content with an overlay toggle so text always participates in layout. */
+.employer-summary {
+  position: relative;
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+}
+
+.employer-company {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.employer-company-copy {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.employer-company-copy strong,
+.employer-company-copy small,
+.employer-balance small,
+.employer-balance strong {
+  display: block;
+}
+
+.employer-company-copy strong {
+  max-width: 100%;
+  color: #183f37;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.employer-balance {
+  flex: none;
+  text-align: right;
+}
+
+.employer-balance > small {
+  color: #59716b;
+  font-size: 0.74rem;
+}
+
+.employer-balance > strong {
+  color: #214a42;
+}
+
+.employer-chevron {
+  width: 20px;
+  flex: none;
+  color: #183f37;
+  font-size: 1.35rem;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+  transition: transform 200ms ease;
+}
+
+.employer.open .employer-chevron {
+  transform: rotate(180deg);
+}
+
+.employer-toggle {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.employer-toggle:focus-visible {
+  outline: 3px solid #176c5d55;
+  outline-offset: -3px;
+}
+
+@media (max-width: 650px) {
+  .employer-summary {
+    display: block;
+    min-height: 0;
+    padding: 15px;
+  }
+
+  .employer-company {
+    width: 100%;
+    padding-right: 30px;
+    align-items: flex-start;
+  }
+
+  .employer-company-copy {
+    width: auto;
+  }
+
+  .employer-company-copy strong {
+    width: 100%;
+    color: #183f37;
+    font-size: 0.9rem;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .employer-balance {
+    width: calc(100% - 47px);
+    margin-top: 12px;
+    margin-left: 47px;
+    text-align: left;
+  }
+
+  .employer-chevron {
+    position: absolute;
+    top: 15px;
+    right: 15px;
   }
 }

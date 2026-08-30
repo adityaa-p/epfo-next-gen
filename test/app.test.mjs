@@ -85,6 +85,8 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "View rejection reason",
     "Transfer claim rejected by field office",
     "Rejection reference",
+    "employer-company-copy",
+    "employer-toggle",
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }

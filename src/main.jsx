@@ -687,14 +687,10 @@ function EmployerCard({
 }) {
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
-      <button
-        className="employer-summary"
-        aria-expanded={expanded}
-        onClick={onToggle}
-      >
-        <div className="company">
+      <div className="employer-summary">
+        <div className="employer-company">
           <span className="avatar">{employer.company[0]}</span>
-          <span>
+          <span className="employer-company-copy">
             <strong>{employer.company}</strong>
             <small className="employment-dates">{employer.dates}</small>
             <small className="row-service">
@@ -702,15 +698,24 @@ function EmployerCard({
             </small>
           </span>
         </div>
-        <div className="balance">
+        <div className="employer-balance">
           <small>Total PF balance</small>
           <strong>{money(employer.balance)}</strong>
           <small className="member">Member ID: {employer.memberId}</small>
         </div>
-        <span className="chevron" aria-hidden>
+        <span className="employer-chevron" aria-hidden>
           ⌄
         </span>
-      </button>
+        <button
+          className="employer-toggle"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          <span className="sr-only">
+            {expanded ? "Collapse" : "Expand"} {employer.company}
+          </span>
+        </button>
+      </div>
       {expanded && (
         <div className="detail">
           <div className="section-heading">
