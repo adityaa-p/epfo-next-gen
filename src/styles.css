@@ -1813,30 +1813,72 @@ h3 {
   width: 100%;
   max-width: 830px;
   margin-bottom: 38px;
-}
-
-.overview-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.overview-metrics .total {
+.overview-metrics {
+  display: flex;
   min-width: 0;
-  padding: 18px 20px;
-  border: 1px solid #c7ddbd;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  border: 1px solid #bdd6b2;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #deefc1, #edf5dd);
   box-shadow: 0 3px 10px #173b320d;
 }
 
+.overview-balance {
+  min-width: 0;
+}
+
+.overview-balance small,
+.overview-balance strong,
+.overview-metrics .experience small,
+.overview-metrics .experience strong {
+  display: block;
+}
+
+.overview-balance small {
+  margin-bottom: 3px;
+  color: #526f67;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.overview-balance strong {
+  color: #143f36;
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
 .overview-metrics .experience {
-  border-color: #c8ded5;
+  flex: none;
+  padding-left: 24px;
+  border-left: 1px solid #b7cfae;
+}
+
+.overview-metrics .experience small {
+  margin-bottom: 2px;
+  color: #688078;
+  font-size: 0.66rem;
+}
+
+.overview-metrics .experience strong {
+  color: #315d50;
+  font-size: 0.86rem;
 }
 
 .overview-uan {
   display: flex;
   align-items: center;
   gap: 13px;
-  margin-top: 12px;
   padding: 14px 16px;
   border: 1px solid #d7e3dc;
   border-radius: 11px;
@@ -1951,21 +1993,21 @@ h3 {
 
 @media (max-width: 650px) {
   .overview-metrics {
-    grid-template-columns: 1fr 1fr;
+    align-items: flex-end;
+    gap: 14px;
+    padding: 18px;
   }
 
-  .overview-metrics .total {
-    width: auto;
-    margin-top: 0;
-    padding: 14px;
+  .overview-balance strong {
+    font-size: 1.85rem;
   }
 
-  .overview-metrics .total strong {
-    font-size: 1.15rem;
+  .overview-metrics .experience {
+    padding-left: 14px;
   }
 
   .overview-uan {
-    align-items: flex-start;
+    align-items: center;
     padding: 13px;
   }
 
