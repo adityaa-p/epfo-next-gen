@@ -887,11 +887,11 @@ function Dashboard({ onLogout, onPassbook }) {
         </div>
         <section className="member-overview" aria-label="Member overview">
           <div className="overview-metrics">
-            <div className="total">
+            <div className="overview-balance">
               <small>Combined balance</small>
               <strong>{money(combinedBalance)}</strong>
             </div>
-            <div className="total experience">
+            <div className="experience">
               <small>Total experience</small>
               <strong>
                 {totalYears} years {remainingMonths} months
@@ -904,7 +904,7 @@ function Dashboard({ onLogout, onPassbook }) {
             </div>
             <div>
               <small>Universal Account Number (UAN)</small>
-              <strong>{uan}</strong>
+              <strong>UAN ending •••• {uan.slice(-4)}</strong>
             </div>
             <span className="verified-pill">
               <span aria-hidden>✓</span> Verified
