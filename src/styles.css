@@ -1778,9 +1778,14 @@ h3 {
 }
 
 @media (max-width: 650px) {
+  main {
+    /* Leave a clear resting area above the fixed assistant trigger. */
+    padding-bottom: calc(105px + env(safe-area-inset-bottom));
+  }
+
   .chat-assistant {
-    right: 14px;
-    bottom: 14px;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
   }
 
   .chat-window {
@@ -1789,9 +1794,24 @@ h3 {
   }
 
   .chat-bubble {
+    justify-content: center;
+    width: 50px;
     height: 50px;
     min-width: 50px;
-    padding: 0 15px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .chat-bubble small {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
 

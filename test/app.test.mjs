@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const app = await readFile(new URL("../src/main.jsx", import.meta.url), "utf8");
+const styles = await readFile(
+  new URL("../src/styles.css", import.meta.url),
+  "utf8",
+);
 
 test("contains all required claim-status milestones in order", () => {
   const milestones = [
@@ -91,4 +95,16 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
   ]) {
     assert.ok(app.includes(feature), `Expected the app to include: ${feature}`);
   }
+});
+
+test("keeps the mobile assistant trigger compact and accessible", () => {
+  assert.match(app, /"Open EPFO One assistant"/);
+  assert.match(
+    styles,
+    /\.chat-bubble \{[\s\S]*?width: 50px;[\s\S]*?border-radius: 50%;/,
+  );
+  assert.match(
+    styles,
+    /\.chat-bubble small \{[\s\S]*?position: absolute;[\s\S]*?clip: rect\(0, 0, 0, 0\);/,
+  );
 });

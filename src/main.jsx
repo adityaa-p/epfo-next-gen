@@ -1458,7 +1458,9 @@ function ChatAssistant() {
         className="chat-bubble"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        aria-label={isOpen ? "Close EPFO assistant" : "Open EPFO assistant"}
+        aria-label={
+          isOpen ? "Close EPFO One assistant" : "Open EPFO One assistant"
+        }
       >
         <span aria-hidden>{isOpen ? "×" : "✦"}</span>
         {!isOpen && <small>Ask EPFO One</small>}
