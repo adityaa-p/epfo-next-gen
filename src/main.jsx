@@ -790,7 +790,7 @@ function EmployerCard({
   );
 }
 function Dashboard({ onLogout, onPassbook }) {
-  const [open, setOpen] = useState("u112");
+  const [open, setOpen] = useState(null);
   const [trackedClaim, setTrackedClaim] = useState(null);
   const [trackedWithdrawal, setTrackedWithdrawal] = useState(null);
   const [submittedClaims, setSubmittedClaims] = useState({});
