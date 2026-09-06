@@ -8,24 +8,77 @@ const styles = await readFile(
   "utf8",
 );
 
-test("contains all required claim-status milestones in order", () => {
-  const milestones = [
+const readStringArray = (name) => {
+  const match = app.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n\\];`));
+  assert.ok(match, `Expected to find the ${name} array`);
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
+};
+
+test("keeps the exact transfer and withdrawal milestone sequences", () => {
+  assert.deepEqual(readStringArray("steps"), [
     "Submitted",
     "Pending at employer",
     "Approved by employer",
     "Pending at field office",
     "Approved by field officer",
     "Done",
-  ];
-  let previous = -1;
-  for (const milestone of milestones) {
-    const current = app.indexOf(milestone);
-    assert.ok(
-      current > previous,
-      `${milestone} should follow the prior milestone`,
-    );
-    previous = current;
+  ]);
+  assert.deepEqual(readStringArray("withdrawalSteps"), [
+    "Submitted",
+    "Pending at field office",
+    "Approved by field office",
+    "Done",
+  ]);
+});
+
+test("presents the new account and status concepts with a masked UAN", () => {
+  for (const concept of [
+    "Track status",
+    "Manage account",
+    "Status details",
+    "View details",
+  ]) {
+    assert.ok(app.includes(concept), `Expected the app to include: ${concept}`);
   }
+
+  const uan = app.match(/const uan = "([\d ]+)";/)?.[1];
+  assert.equal(uan, "1009 2847 3612");
+  assert.match(app, /<strong>UAN ending •••• \{uan\.slice\(-4\)\}<\/strong>/);
+  assert.equal(`UAN ending •••• ${uan.slice(-4)}`, "UAN ending •••• 3612");
+});
+
+test("Dashboard starts with every employer collapsed", () => {
+  const dashboard = app.slice(
+    app.indexOf("function Dashboard("),
+    app.indexOf("function Passbook("),
+  );
+  assert.match(dashboard, /const \[open, setOpen\] = useState\(null\);/);
+  assert.match(dashboard, /expanded=\{open === employer\.id\}/);
+  assert.match(
+    dashboard,
+    /setOpen\(open === employer\.id \? null : employer\.id\)/,
+  );
+});
+
+test("wires employer, account-management, and status disclosures", () => {
+  assert.match(app, /onClick=\{onToggle\}/);
+  assert.match(app, /\{expanded && \(\s*<div className="detail">/);
+  assert.match(
+    app,
+    /onClick=\{\(\) => setIsManaging\(\(current\) => !current\)\}/,
+  );
+  assert.match(app, /\{isManaging && \(\s*<div\s+className="managed-actions"/);
+  assert.match(app, /onClick=\{onTrackStatus\}>\s*Track status/);
+  assert.match(app, /onClick=\{onClose\}\s+aria-label="Close status details"/);
+  assert.match(app, /onClick=\{onClose\}>\s*Close/);
+  assert.match(
+    app,
+    /setSelectedStatusEmployerId\(transferEmployer\.id\)[\s\S]*?Transfer claim submitted successfully\./,
+  );
+  assert.match(
+    app,
+    /setSelectedStatusEmployerId\(withdrawEmployer\.id\)[\s\S]*?Withdrawal request submitted successfully\./,
+  );
 });
 
 test("provides mock OTP, employer actions, and a passbook route", () => {
@@ -34,12 +87,8 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "Verify & continue",
     "Transfer Amount",
     "Withdraw Amount",
-    "Claim status",
     "View complete passbook",
     "Total experience",
-    "Track status",
-    "Manage account",
-    "Status details",
     "Processed",
     "Transaction date",
     "Employee share (12%)",
@@ -69,9 +118,7 @@ test("provides mock OTP, employer actions, and a passbook route", () => {
     "12 contributions from April to March",
     "Choose employer",
     "allowEmployerSelection",
-    "View details",
     "Hide details",
-    "Withdrawal request status",
     "Approved by field office",
     "EPFO One assistant",
     "Ask about your PF account",
