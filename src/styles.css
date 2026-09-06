@@ -2415,6 +2415,109 @@ h3 {
   outline-offset: -3px;
 }
 
+.employer-disclosure {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  color: #176c5d;
+  pointer-events: none;
+}
+
+.employer-toggle-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.actions {
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.managed-actions {
+  display: flex;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #dce7e1;
+  border-radius: 9px;
+  background: #f3f8f3;
+  animation: reveal-managed-actions 180ms ease-out;
+}
+
+@keyframes reveal-managed-actions {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.status-backdrop {
+  z-index: 130;
+}
+
+.status-dialog {
+  width: min(100%, 820px);
+}
+
+.status-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid #d8e5de;
+  border-radius: 11px;
+  background: #f5f9f3;
+}
+
+.status-summary > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.status-summary strong,
+.status-summary small {
+  display: block;
+}
+
+.status-summary strong {
+  overflow-wrap: anywhere;
+}
+
+.status-summary small {
+  margin-top: 2px;
+  color: #657b76;
+  font-size: 0.72rem;
+}
+
+.status-summary-count {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #deefbd;
+  color: #315d50;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.status-progress-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.status-progress-list .claim {
+  margin-top: 0;
+}
+
+.modal-close:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 3px solid #176c5d55;
+  outline-offset: 2px;
+}
+
 @media (max-width: 650px) {
   .employer-summary {
     display: block;
@@ -2448,8 +2551,54 @@ h3 {
   }
 
   .employer-chevron {
+    position: static;
+  }
+
+  .employer-disclosure {
     position: absolute;
-    top: 15px;
+    top: 17px;
     right: 15px;
+  }
+
+  .employer-company {
+    padding-right: 112px;
+  }
+
+  .actions,
+  .managed-actions {
+    width: 100%;
+  }
+
+  .actions > .primary,
+  .managed-actions button {
+    width: 100%;
+  }
+
+  .managed-actions {
+    flex-direction: column;
+  }
+
+  .status-summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .status-summary-count {
+    margin-left: 47px;
+  }
+
+  .status-dialog .progress {
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .status-dialog .progress li {
+    min-width: 90px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .managed-actions {
+    animation: none;
   }
 }
