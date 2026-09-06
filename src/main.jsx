@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -356,6 +356,97 @@ function WithdrawalProgress({ request }) {
   );
 }
 
+function StatusDetailsModal({ employer, claim, withdrawalRequest, onClose }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const focusable = dialogRef.current?.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <div className="modal-backdrop status-backdrop" role="presentation">
+      <section
+        ref={dialogRef}
+        className="modal-card status-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="status-details-title"
+        aria-describedby="status-details-summary"
+      >
+        <div className="modal-heading">
+          <div>
+            <p className="eyebrow">APPLICATION STATUS</p>
+            <h2 id="status-details-title">Status details</h2>
+          </div>
+          <button
+            ref={closeRef}
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Close status details"
+          >
+            ×
+          </button>
+        </div>
+        <div className="status-summary" id="status-details-summary">
+          <span className="avatar" aria-hidden>
+            {employer.company[0]}
+          </span>
+          <div>
+            <strong>{employer.company}</strong>
+            <small>Member ID: {employer.memberId}</small>
+          </div>
+          <span className="status-summary-count">
+            {[claim, withdrawalRequest].filter(Boolean).length} active record
+            {[claim, withdrawalRequest].filter(Boolean).length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <div className="status-progress-list">
+          {claim && <ClaimProgress claim={claim} />}
+          {withdrawalRequest && (
+            <WithdrawalProgress request={withdrawalRequest} />
+          )}
+        </div>
+        <div className="modal-actions">
+          <button className="primary" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function TransferClaimModal({
   employer,
   targetEmployer,
@@ -676,15 +767,15 @@ function EmployerCard({
   claim,
   withdrawalRequest,
   expanded,
-  isTrackingClaim,
-  isTrackingWithdrawal,
   onToggle,
   onPassbook,
-  onTrackClaim,
+  onTrackStatus,
   onTransferClaim,
-  onTrackWithdrawal,
   onWithdrawalRequest,
 }) {
+  const [isManaging, setIsManaging] = useState(false);
+  const hasStatus = Boolean(claim || withdrawalRequest);
+
   return (
     <article className={`employer ${expanded ? "open" : ""}`}>
       <div className="employer-summary">
@@ -703,8 +794,11 @@ function EmployerCard({
           <strong>{money(employer.balance)}</strong>
           <small className="member">Member ID: {employer.memberId}</small>
         </div>
-        <span className="employer-chevron" aria-hidden>
-          ⌄
+        <span className="employer-disclosure" aria-hidden>
+          <span className="employer-toggle-label">
+            {expanded ? "Hide details" : "View details"}
+          </span>
+          <span className="employer-chevron">⌄</span>
         </span>
         <button
           className="employer-toggle"
@@ -758,30 +852,35 @@ function EmployerCard({
               </tbody>
             </table>
           </div>
-          {isTrackingClaim && <ClaimProgress claim={claim} />}
-          {isTrackingWithdrawal && (
-            <WithdrawalProgress request={withdrawalRequest} />
-          )}
           <div className="actions">
-            {claim ? (
-              <button className="secondary" onClick={onTrackClaim}>
-                {isTrackingClaim ? "Hide claim progress" : "Track claim"}
+            {hasStatus ? (
+              <button className="primary" onClick={onTrackStatus}>
+                Track status
               </button>
             ) : (
-              <button className="secondary" onClick={onTransferClaim}>
-                Transfer Amount
-              </button>
-            )}
-            {withdrawalRequest ? (
-              <button className="primary" onClick={onTrackWithdrawal}>
-                {isTrackingWithdrawal
-                  ? "Hide request progress"
-                  : "Track request progress"}
-              </button>
-            ) : (
-              <button className="primary" onClick={onWithdrawalRequest}>
-                Withdraw Amount
-              </button>
+              <>
+                <button
+                  className="primary"
+                  aria-expanded={isManaging}
+                  aria-controls={`account-actions-${employer.id}`}
+                  onClick={() => setIsManaging((current) => !current)}
+                >
+                  Manage account
+                </button>
+                {isManaging && (
+                  <div
+                    className="managed-actions"
+                    id={`account-actions-${employer.id}`}
+                  >
+                    <button className="secondary" onClick={onTransferClaim}>
+                      Transfer Amount
+                    </button>
+                    <button className="secondary" onClick={onWithdrawalRequest}>
+                      Withdraw Amount
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -791,8 +890,8 @@ function EmployerCard({
 }
 function Dashboard({ onLogout, onPassbook }) {
   const [open, setOpen] = useState(null);
-  const [trackedClaim, setTrackedClaim] = useState(null);
-  const [trackedWithdrawal, setTrackedWithdrawal] = useState(null);
+  const [selectedStatusEmployerId, setSelectedStatusEmployerId] =
+    useState(null);
   const [submittedClaims, setSubmittedClaims] = useState({});
   const [withdrawalRequests, setWithdrawalRequests] = useState({});
   const [transferEmployer, setTransferEmployer] = useState(null);
@@ -844,7 +943,7 @@ function Dashboard({ onLogout, onPassbook }) {
       ...claims,
       [transferEmployer.id]: claim,
     }));
-    setTrackedClaim(transferEmployer.id);
+    setSelectedStatusEmployerId(transferEmployer.id);
     setSuccessMessage("Transfer claim submitted successfully.");
     cancelTransfer();
   };
@@ -869,7 +968,7 @@ function Dashboard({ onLogout, onPassbook }) {
         statusDates: [submissionDate],
       },
     }));
-    setTrackedWithdrawal(withdrawEmployer.id);
+    setSelectedStatusEmployerId(withdrawEmployer.id);
     setSuccessMessage("Withdrawal request submitted successfully.");
     cancelWithdrawal();
   };
@@ -926,8 +1025,6 @@ function Dashboard({ onLogout, onPassbook }) {
               claim={submittedClaims[employer.id] || employer.claim}
               withdrawalRequest={withdrawalRequests[employer.id]}
               expanded={open === employer.id}
-              isTrackingClaim={trackedClaim === employer.id}
-              isTrackingWithdrawal={trackedWithdrawal === employer.id}
               onToggle={() =>
                 setOpen(open === employer.id ? null : employer.id)
               }
@@ -942,16 +1039,7 @@ function Dashboard({ onLogout, onPassbook }) {
                 setWithdrawalForm(emptyWithdrawalForm);
                 setShowWithdrawalConfirmation(false);
               }}
-              onTrackWithdrawal={() =>
-                setTrackedWithdrawal(
-                  trackedWithdrawal === employer.id ? null : employer.id,
-                )
-              }
-              onTrackClaim={() =>
-                setTrackedClaim(
-                  trackedClaim === employer.id ? null : employer.id,
-                )
-              }
+              onTrackStatus={() => setSelectedStatusEmployerId(employer.id)}
             />
           ))}
         </section>
@@ -1006,6 +1094,20 @@ function Dashboard({ onLogout, onPassbook }) {
           onYes={submitWithdrawalRequest}
         />
       )}
+      {selectedStatusEmployerId &&
+        (() => {
+          const statusEmployer = employers.find(
+            (employer) => employer.id === selectedStatusEmployerId,
+          );
+          return statusEmployer ? (
+            <StatusDetailsModal
+              employer={statusEmployer}
+              claim={submittedClaims[statusEmployer.id] || statusEmployer.claim}
+              withdrawalRequest={withdrawalRequests[statusEmployer.id]}
+              onClose={() => setSelectedStatusEmployerId(null)}
+            />
+          ) : null;
+        })()}
     </>
   );
 }
