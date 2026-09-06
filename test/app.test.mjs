@@ -111,3 +111,24 @@ test("chat guidance follows the task-oriented paths", () => {
     "getChatResponse",
   ]);
 });
+
+test("hardens the mock sign-in journey", () => {
+  assertStrings([
+    "resendSeconds",
+    "Resend code in",
+    "Change mobile number",
+    "A new verification code has been sent.",
+    "Enter the complete six-digit verification code.",
+  ]);
+});
+
+test("persists requests and exports the selected passbook", () => {
+  assertStrings([
+    "epfo-one-requests",
+    "initialRequests",
+    "localStorage",
+    "downloadPassbookCsv",
+    "Download CSV",
+    "text/csv",
+  ]);
+});

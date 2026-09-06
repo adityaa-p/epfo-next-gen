@@ -3292,3 +3292,48 @@ textarea {
     justify-self: stretch;
   }
 }
+
+/* Phase 3: resilient sign-in and portable passbook controls */
+.passbook-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.export-passbook {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.otp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+
+.otp-actions .link-button {
+  min-height: 40px;
+}
+
+.login-message {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eef7f0;
+  color: #285e4f;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 650px) {
+  .passbook-controls {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .export-passbook {
+    align-self: flex-start;
+  }
+}

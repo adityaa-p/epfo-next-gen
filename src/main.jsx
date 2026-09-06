@@ -137,6 +137,7 @@ const emptyWithdrawalForm = {
   district: "",
 };
 const financialYears = [2026, 2025, 2024];
+const requestStorageKey = "epfo-one-requests";
 const financialYearLabel = (startYear) =>
   `${startYear}–${String(startYear + 1).slice(-2)}`;
 const buildPassbookEntries = (employer, startYear) => {
@@ -183,6 +184,47 @@ const serviceDuration = (months) => {
   const remainingMonths = months % 12;
   return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
 };
+
+const escapeCsvValue = (value) => `"${String(value).replaceAll('"', '""')}"`;
+
+function downloadPassbookCsv(employer, financialYear, entries, totals) {
+  const headers = [
+    "Wage month",
+    "Transaction date",
+    "EPF wages",
+    "EPS wages",
+    "Employee share (12%)",
+    "Employer share (3.67%)",
+    "Pension share (8.33%)",
+  ];
+  const rows = entries.map((entry) => [
+    entry.wageMonth,
+    entry.transactionDate,
+    entry.epfWages,
+    entry.epsWages,
+    entry.employeeShare,
+    entry.employerShare,
+    entry.pensionShare,
+  ]);
+  rows.push([
+    `Total contributions FY ${financialYearLabel(financialYear)}`,
+    "",
+    totals.epfWages,
+    totals.epsWages,
+    totals.employeeShare,
+    totals.employerShare,
+    totals.pensionShare,
+  ]);
+  const csv = [headers, ...rows]
+    .map((row) => row.map(escapeCsvValue).join(","))
+    .join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${employer.company.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-fy-${financialYearLabel(financialYear)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 function Header({ onLogout, currentView = "dashboard", onNavigate }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -754,6 +796,32 @@ const sortRequests = (requests) =>
     if (priorityDifference) return priorityDifference;
     return new Date(b.submittedAt) - new Date(a.submittedAt);
   });
+
+function initialRequests() {
+  const defaults = employers
+    .filter((employer) => employer.claim)
+    .map((employer) => ({
+      ...employer.claim,
+      id: `transfer-${employer.id}`,
+      kind: "transfer",
+      employerId: employer.id,
+      status:
+        employer.claim.claimStatus === "Rejected"
+          ? "rejected"
+          : employer.claim.claimStatus === "Processed"
+            ? "completed"
+            : "progress",
+      submittedAt: employer.claim.statusDates[0],
+    }));
+  try {
+    const saved = JSON.parse(
+      globalThis.localStorage?.getItem(requestStorageKey),
+    );
+    return Array.isArray(saved) ? saved : defaults;
+  } catch {
+    return defaults;
+  }
+}
 
 function RequestSummary({ request, employer, onTrack }) {
   const state = requestState(request);
@@ -1378,19 +1446,37 @@ function Passbook({
               Review monthly deposits and annual totals for this employment.
             </p>
           </div>
-          <label className="year-selector">
-            <span>Financial year</span>
-            <select
-              value={financialYear}
-              onChange={(event) => setFinancialYear(Number(event.target.value))}
+          <div className="passbook-controls">
+            <label className="year-selector">
+              <span>Financial year</span>
+              <select
+                value={financialYear}
+                onChange={(event) =>
+                  setFinancialYear(Number(event.target.value))
+                }
+              >
+                {financialYears.map((year) => (
+                  <option key={year} value={year}>
+                    FY {financialYearLabel(year)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="secondary export-passbook"
+              type="button"
+              onClick={() =>
+                downloadPassbookCsv(
+                  selectedEmployer,
+                  financialYear,
+                  entries,
+                  totals,
+                )
+              }
             >
-              {financialYears.map((year) => (
-                <option key={year} value={year}>
-                  FY {financialYearLabel(year)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span aria-hidden>↓</span> Download CSV
+            </button>
+          </div>
         </div>
 
         <section className="passbook-employer" aria-label="Selected employer">
@@ -1484,9 +1570,35 @@ function Login({ onVerify }) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(false);
   const [code, setCode] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!resendSeconds) return undefined;
+    const timer = globalThis.setTimeout(
+      () => setResendSeconds((seconds) => seconds - 1),
+      1000,
+    );
+    return () => globalThis.clearTimeout(timer);
+  }, [resendSeconds]);
+
+  const sendCode = () => {
+    setOtp(true);
+    setCode("");
+    setMessage("A new verification code has been sent.");
+    setResendSeconds(30);
+  };
   const submit = (e) => {
     e.preventDefault();
-    otp ? code.length === 6 && onVerify() : setOtp(true);
+    if (!otp) {
+      sendCode();
+      return;
+    }
+    if (code.length !== 6) {
+      setMessage("Enter the complete six-digit verification code.");
+      return;
+    }
+    onVerify();
   };
   return (
     <main className="login">
@@ -1547,14 +1659,44 @@ function Login({ onVerify }) {
               </div>
             </label>
           )}
-          <button className="primary wide" type="submit">
+          <button
+            className="primary wide"
+            type="submit"
+            disabled={otp ? code.length !== 6 : phone.length !== 10}
+          >
             {otp ? "Verify & continue" : "Send OTP"} <span>→</span>
           </button>
         </form>
+        {message && (
+          <p className="login-message" role="status" aria-live="polite">
+            {message}
+          </p>
+        )}
         {otp && (
-          <button className="link-button resend" onClick={() => setCode("")}>
-            Resend code
-          </button>
+          <div className="otp-actions">
+            <button
+              className="link-button resend"
+              type="button"
+              disabled={resendSeconds > 0}
+              onClick={sendCode}
+            >
+              {resendSeconds > 0
+                ? `Resend code in ${resendSeconds}s`
+                : "Resend code"}
+            </button>
+            <button
+              className="link-button"
+              type="button"
+              onClick={() => {
+                setOtp(false);
+                setCode("");
+                setMessage("");
+                setResendSeconds(0);
+              }}
+            >
+              Change mobile number
+            </button>
+          </div>
         )}
         <small className="terms">
           By continuing, you agree to use this service only for your own EPFO
@@ -1701,29 +1843,24 @@ function App() {
   const [signedIn, setSignedIn] = useState(false);
   const [view, setView] = useState({ name: "dashboard" });
   const [successMessage, setSuccessMessage] = useState("");
-  const [requests, setRequests] = useState(() =>
-    employers
-      .filter((employer) => employer.claim)
-      .map((employer) => ({
-        ...employer.claim,
-        id: `transfer-${employer.id}`,
-        kind: "transfer",
-        employerId: employer.id,
-        status:
-          employer.claim.claimStatus === "Rejected"
-            ? "rejected"
-            : employer.claim.claimStatus === "Processed"
-              ? "completed"
-              : "progress",
-        submittedAt: employer.claim.statusDates[0],
-      })),
-  );
+  const [requests, setRequests] = useState(initialRequests);
 
   useEffect(() => {
     if (!successMessage) return undefined;
     const timeout = globalThis.setTimeout(() => setSuccessMessage(""), 3000);
     return () => globalThis.clearTimeout(timeout);
   }, [successMessage]);
+
+  useEffect(() => {
+    try {
+      globalThis.localStorage?.setItem(
+        requestStorageKey,
+        JSON.stringify(requests),
+      );
+    } catch {
+      // The prototype still works when storage is blocked or unavailable.
+    }
+  }, [requests]);
 
   const navigate = (name, details = {}) => setView({ name, ...details });
   const logout = () => {

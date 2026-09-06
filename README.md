@@ -2,6 +2,8 @@
 
 A mobile- and tablet-first React prototype for a clearer EPFO member experience. The Phase 2 information architecture keeps the member home concise and groups actions by the task a member wants to complete: **Employment details**, **Manage funds**, **Requests**, and **Track status**. The prototype uses local data and simulated submissions throughout.
 
+Phase 3 hardens the prototype journey with a resend cooldown and mobile-number correction during mock OTP sign-in, local request persistence across browser refreshes, and downloadable CSV passbooks for the selected employer and financial year.
+
 ## Member journeys
 
 ### Review an employment and its passbook
@@ -10,6 +12,7 @@ A mobile- and tablet-first React prototype for a clearer EPFO member experience.
 2. Choose an employment from the compact cards on member home.
 3. Open **Employment details** to review service, balance, and recent contributions.
 4. Select **View complete passbook**, then choose a financial year to inspect monthly EPF and EPS entries.
+5. Select **Download CSV** to keep an accessible copy of the displayed financial year.
 
 ### Transfer or withdraw funds
 
@@ -17,6 +20,8 @@ A mobile- and tablet-first React prototype for a clearer EPFO member experience.
 2. Select the transfer or withdrawal task.
 3. Complete the guided form and review the confirmation before submitting.
 4. Return to **Requests** and use **Track status** to follow the request through the applicable milestones.
+
+Submitted mock requests are stored in the browser so that the Requests journey remains intact after refreshing the page. Clearing browser storage restores the original demonstration data.
 
 ### Review identity details
 
