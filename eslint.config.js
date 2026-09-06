@@ -1,7 +1,7 @@
 export default [
   {
     files: ["**/*.{js,jsx,mjs}"],
-    ignores: ["node_modules/**"],
+    ignores: ["node_modules/**", "dist/**"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

@@ -1,6 +1,30 @@
 # EPFO One
 
-A mobile- and tablet-first React prototype for a clearer EPFO member experience. It includes a mock mobile/OTP login, employer accounts ordered by recency, expandable contribution details, mock claim tracking, and a passbook placeholder.
+A mobile- and tablet-first React prototype for a clearer EPFO member experience. The Phase 2 information architecture keeps the member home concise and groups actions by the task a member wants to complete: **Employment details**, **Manage funds**, **Requests**, and **Track status**. The prototype uses local data and simulated submissions throughout.
+
+## Member journeys
+
+### Review an employment and its passbook
+
+1. Sign in with any ten-digit mobile number and six-digit OTP.
+2. Choose an employment from the compact cards on member home.
+3. Open **Employment details** to review service, balance, and recent contributions.
+4. Select **View complete passbook**, then choose a financial year to inspect monthly EPF and EPS entries.
+
+### Transfer or withdraw funds
+
+1. Open an employment and choose **Manage funds**.
+2. Select the transfer or withdrawal task.
+3. Complete the guided form and review the confirmation before submitting.
+4. Return to **Requests** and use **Track status** to follow the request through the applicable milestones.
+
+### Review identity details
+
+The member home masks the UAN so it is not exposed at a glance. Open **Member profile** from the profile menu when the full UAN and related identity details are needed.
+
+### Get help
+
+Open the EPFO One assistant and ask about balances, employment details, managing funds, requests, status tracking, passbooks, or the member profile. Its answers link the question back to the relevant task path. The assistant is a deterministic mock and does not contact an external service.
 
 ## Run locally
 

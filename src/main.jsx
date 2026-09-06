@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -184,14 +184,34 @@ const serviceDuration = (months) => {
   return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
 };
 
-function Header({ onLogout }) {
+function Header({ onLogout, currentView = "dashboard", onNavigate }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   return (
     <header>
-      <a className="brand" href="#dashboard" aria-label="EPFO One home">
+      <button
+        className="brand brand-button"
+        type="button"
+        onClick={() => onNavigate?.("dashboard")}
+        aria-label="EPFO One home"
+      >
         <span>e</span> EPFO <b>one</b>
-      </a>
+      </button>
+      <nav className="signed-in-nav" aria-label="Primary navigation">
+        {["dashboard", "requests", "profile"].map((destination) => (
+          <button
+            key={destination}
+            type="button"
+            className={currentView === destination ? "active" : ""}
+            aria-current={currentView === destination ? "page" : undefined}
+            onClick={() => onNavigate?.(destination)}
+          >
+            {destination === "dashboard"
+              ? "Home"
+              : destination[0].toUpperCase() + destination.slice(1)}
+          </button>
+        ))}
+      </nav>
       <div className="profile-menu-wrap">
         <button
           className="profile"
@@ -210,37 +230,52 @@ function Header({ onLogout }) {
               <span>AK</span>
               <div>
                 <strong>{memberName}</strong>
-                <small>UAN · {uan}</small>
+                <small>UAN ending •••• {uan.slice(-4)}</small>
               </div>
             </div>
             <div className="profile-menu-options">
               <button
                 role="menuitem"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onNavigate?.("profile");
+                }}
               >
                 <span aria-hidden>◉</span> Profile
               </button>
               <button
                 role="menuitem"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onNavigate?.("profile");
+                }}
               >
                 <span aria-hidden>✓</span> KYC
               </button>
               <button
                 role="menuitem"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onNavigate?.("profile");
+                }}
               >
                 <span aria-hidden>⌕</span> Change phone no
               </button>
               <button
                 role="menuitem"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onNavigate?.("profile");
+                }}
               >
                 <span aria-hidden>♧</span> E-Nomination
               </button>
               <button
                 role="menuitem"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onNavigate?.("profile");
+                }}
               >
                 <span aria-hidden>▤</span> UAN Card
               </button>
@@ -252,6 +287,29 @@ function Header({ onLogout }) {
         )}
       </div>
     </header>
+  );
+}
+
+function MobileNavigation({ currentView, onNavigate }) {
+  return (
+    <nav className="mobile-nav" aria-label="Mobile primary navigation">
+      {[
+        ["dashboard", "Home", "⌂"],
+        ["requests", "Requests", "◎"],
+        ["profile", "Profile", "○"],
+      ].map(([destination, label, icon]) => (
+        <button
+          key={destination}
+          type="button"
+          className={currentView === destination ? "active" : ""}
+          aria-current={currentView === destination ? "page" : undefined}
+          onClick={() => onNavigate(destination)}
+        >
+          <span aria-hidden>{icon}</span>
+          {label}
+        </button>
+      ))}
+    </nav>
   );
 }
 function ClaimProgress({ claim }) {
@@ -353,97 +411,6 @@ function WithdrawalProgress({ request }) {
         ))}
       </ol>
     </section>
-  );
-}
-
-function StatusDetailsModal({ employer, claim, withdrawalRequest, onClose }) {
-  const dialogRef = useRef(null);
-  const closeRef = useRef(null);
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement;
-    closeRef.current?.focus();
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab") return;
-
-      const focusable = dialogRef.current?.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [onClose]);
-
-  return (
-    <div className="modal-backdrop status-backdrop" role="presentation">
-      <section
-        ref={dialogRef}
-        className="modal-card status-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="status-details-title"
-        aria-describedby="status-details-summary"
-      >
-        <div className="modal-heading">
-          <div>
-            <p className="eyebrow">APPLICATION STATUS</p>
-            <h2 id="status-details-title">Status details</h2>
-          </div>
-          <button
-            ref={closeRef}
-            className="modal-close"
-            onClick={onClose}
-            aria-label="Close status details"
-          >
-            ×
-          </button>
-        </div>
-        <div className="status-summary" id="status-details-summary">
-          <span className="avatar" aria-hidden>
-            {employer.company[0]}
-          </span>
-          <div>
-            <strong>{employer.company}</strong>
-            <small>Member ID: {employer.memberId}</small>
-          </div>
-          <span className="status-summary-count">
-            {[claim, withdrawalRequest].filter(Boolean).length} active record
-            {[claim, withdrawalRequest].filter(Boolean).length === 1 ? "" : "s"}
-          </span>
-        </div>
-        <div className="status-progress-list">
-          {claim && <ClaimProgress claim={claim} />}
-          {withdrawalRequest && (
-            <WithdrawalProgress request={withdrawalRequest} />
-          )}
-        </div>
-        <div className="modal-actions">
-          <button className="primary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </section>
-    </div>
   );
 }
 
@@ -762,24 +729,101 @@ function WithdrawalConfirmationModal({ form, onNo, onYes }) {
   );
 }
 
-function EmployerCard({
-  employer,
-  claim,
-  withdrawalRequest,
-  expanded,
-  onToggle,
-  onPassbook,
-  onTrackStatus,
-  onTransferClaim,
-  onWithdrawalRequest,
-}) {
-  const [isManaging, setIsManaging] = useState(false);
-  const hasStatus = Boolean(claim || withdrawalRequest);
+function requestState(request) {
+  if (request.status === "rejected" || request.rejectedAt !== undefined) {
+    return { label: "Action required", tone: "rejected", priority: 0 };
+  }
+  const finalStep =
+    request.kind === "withdrawal"
+      ? withdrawalSteps.length - 1
+      : steps.length - 1;
+  if (request.progressStep >= finalStep) {
+    return { label: "Completed", tone: "complete", priority: 2 };
+  }
+  return {
+    label: request.progressStep === 0 ? "Submitted" : "In progress",
+    tone: "progress",
+    priority: 1,
+  };
+}
 
+const sortRequests = (requests) =>
+  [...requests].sort((a, b) => {
+    const priorityDifference =
+      requestState(a).priority - requestState(b).priority;
+    if (priorityDifference) return priorityDifference;
+    return new Date(b.submittedAt) - new Date(a.submittedAt);
+  });
+
+function RequestSummary({ request, employer, onTrack }) {
+  const state = requestState(request);
   return (
-    <article className={`employer ${expanded ? "open" : ""}`}>
-      <div className="employer-summary">
-        <div className="employer-company">
+    <article className={`request-summary ${state.tone}`}>
+      <div>
+        <small>
+          {request.kind === "transfer" ? "PF transfer" : "PF withdrawal"}
+        </small>
+        <strong>{employer.company}</strong>
+        <span>Member ID: {employer.memberId}</span>
+      </div>
+      <div className="request-summary-status">
+        <span className={`request-status ${state.tone}`}>{state.label}</span>
+        <time>{request.submittedAt}</time>
+        <button className="secondary" type="button" onClick={onTrack}>
+          Track status
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function StatusDetailsModal({ request, employer, onClose }) {
+  if (!request || !employer) return null;
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        className="modal-card status-details-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="status-details-title"
+      >
+        <div className="modal-heading">
+          <div>
+            <p className="eyebrow">REQUEST STATUS</p>
+            <h2 id="status-details-title">Status details</h2>
+            <p>
+              {employer.company} · {employer.memberId}
+            </p>
+          </div>
+          <button
+            className="modal-close"
+            type="button"
+            onClick={onClose}
+            aria-label="Close status details"
+          >
+            ×
+          </button>
+        </div>
+        {request.kind === "withdrawal" ? (
+          <WithdrawalProgress request={request} />
+        ) : (
+          <ClaimProgress claim={request} />
+        )}
+      </section>
+    </div>
+  );
+}
+
+function EmployerCard({ employer, request, onSelect }) {
+  const state = request ? requestState(request) : null;
+  return (
+    <article className="employer employer-compact">
+      <button
+        className="employer-summary employer-select"
+        type="button"
+        onClick={onSelect}
+      >
+        <span className="employer-company">
           <span className="avatar">{employer.company[0]}</span>
           <span className="employer-company-copy">
             <strong>{employer.company}</strong>
@@ -788,43 +832,288 @@ function EmployerCard({
               Total service: {serviceDuration(employer.serviceMonths)}
             </small>
           </span>
-        </div>
-        <div className="employer-balance">
+        </span>
+        <span className="employer-balance">
           <small>Total PF balance</small>
           <strong>{money(employer.balance)}</strong>
           <small className="member">Member ID: {employer.memberId}</small>
-        </div>
-        <span className="employer-disclosure" aria-hidden>
-          <span className="employer-toggle-label">
-            {expanded ? "Hide details" : "View details"}
-          </span>
-          <span className="employer-chevron">⌄</span>
         </span>
-        <button
-          className="employer-toggle"
-          aria-expanded={expanded}
-          onClick={onToggle}
-        >
-          <span className="sr-only">
-            {expanded ? "Collapse" : "Expand"} {employer.company}
+        <span className="employer-card-end">
+          {state && (
+            <span className={`request-status ${state.tone}`}>
+              {state.label}
+            </span>
+          )}
+          <span className="view-employment">
+            View employment <span aria-hidden>→</span>
           </span>
+        </span>
+      </button>
+    </article>
+  );
+}
+
+function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
+  const combinedBalance = employers.reduce(
+    (sum, employer) => sum + employer.balance,
+    0,
+  );
+  const totalServiceMonths = employers.reduce(
+    (sum, employer) => sum + employer.serviceMonths,
+    0,
+  );
+  const orderedRequests = sortRequests(requests);
+  const actionRequest = orderedRequests.find(
+    (request) => requestState(request).tone === "rejected",
+  );
+  const latestRequests = orderedRequests.slice(0, 2);
+  const requestForEmployer = (employerId) =>
+    orderedRequests.find((request) => request.employerId === employerId);
+
+  return (
+    <>
+      <Header
+        onLogout={onLogout}
+        currentView="dashboard"
+        onNavigate={onNavigate}
+      />
+      <main id="dashboard">
+        <div className="welcome">
+          <div>
+            <p className="eyebrow">MEMBER HOME</p>
+            <h1>Good morning, Ananya.</h1>
+            <p>
+              Start with your balance, then choose an employment when you need
+              more detail.
+            </p>
+          </div>
+        </div>
+        <section
+          className="member-overview overview-simple"
+          aria-label="Member overview"
+        >
+          <div className="total balance-primary">
+            <small>Combined PF balance</small>
+            <strong>{money(combinedBalance)}</strong>
+            <span>Total service · {serviceDuration(totalServiceMonths)}</span>
+            <small>UAN ending •••• {uan.slice(-4)}</small>
+          </div>
+        </section>
+
+        {actionRequest && (
+          <section
+            className="things-to-do"
+            aria-labelledby="things-to-do-title"
+          >
+            <div>
+              <p className="eyebrow">THINGS TO DO</p>
+              <h2 id="things-to-do-title">A transfer needs your attention</h2>
+              <p>
+                Review the field office response before submitting the transfer
+                again.
+              </p>
+            </div>
+            <button
+              className="primary"
+              type="button"
+              onClick={() =>
+                onNavigate("requests", { requestId: actionRequest.id })
+              }
+            >
+              Review issue
+            </button>
+          </section>
+        )}
+
+        <section className="accounts">
+          <div className="accounts-title">
+            <div>
+              <h2>Your employments</h2>
+              <p>Most recent employment first</p>
+            </div>
+            <span>{employers.length} accounts</span>
+          </div>
+          {employers.map((employer) => (
+            <EmployerCard
+              key={employer.id}
+              employer={employer}
+              request={requestForEmployer(employer.id)}
+              onSelect={() =>
+                onNavigate("employment", { employerId: employer.id })
+              }
+            />
+          ))}
+        </section>
+
+        {latestRequests.length > 0 && (
+          <section
+            className="recent-requests"
+            aria-labelledby="recent-requests-title"
+          >
+            <div className="section-heading">
+              <div>
+                <h2 id="recent-requests-title">Recent requests</h2>
+                <p>Your latest claim activity</p>
+              </div>
+              <button
+                className="link-button"
+                type="button"
+                onClick={() => onNavigate("requests")}
+              >
+                View all requests
+              </button>
+            </div>
+            {latestRequests.map((request) => (
+              <RequestSummary
+                key={request.id}
+                request={request}
+                employer={employers.find(
+                  (item) => item.id === request.employerId,
+                )}
+                onTrack={() =>
+                  onNavigate("requests", { requestId: request.id })
+                }
+              />
+            ))}
+          </section>
+        )}
+
+        <button
+          id="passbook"
+          className="passbook"
+          onClick={() => onPassbook(employers[0], true)}
+        >
+          <span>▤</span>
+          <span>
+            <strong>View complete passbook</strong>
+            <small>All contributions and transactions in one place</small>
+          </span>
+          <b>→</b>
         </button>
-      </div>
-      {expanded && (
-        <div className="detail">
+      </main>
+    </>
+  );
+}
+
+function EmploymentDetails({
+  employer,
+  requests,
+  onLogout,
+  onNavigate,
+  onPassbook,
+  onSubmitRequest,
+}) {
+  const [transferEmployer, setTransferEmployer] = useState(null);
+  const [targetEmployer, setTargetEmployer] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [withdrawEmployer, setWithdrawEmployer] = useState(null);
+  const [withdrawalForm, setWithdrawalForm] = useState(emptyWithdrawalForm);
+  const [showWithdrawalConfirmation, setShowWithdrawalConfirmation] =
+    useState(false);
+  const employerRequests = sortRequests(
+    requests.filter((request) => request.employerId === employer.id),
+  );
+  const transferRequest = employerRequests.find(
+    (request) => request.kind === "transfer",
+  );
+  const transferCanBeRetried =
+    transferRequest && requestState(transferRequest).tone === "rejected";
+  const withdrawalRequest = employerRequests.find(
+    (request) => request.kind === "withdrawal",
+  );
+
+  const cancelTransfer = () => {
+    setTransferEmployer(null);
+    setTargetEmployer(null);
+    setShowConfirmation(false);
+  };
+  const cancelWithdrawal = () => {
+    setWithdrawEmployer(null);
+    setWithdrawalForm(emptyWithdrawalForm);
+    setShowWithdrawalConfirmation(false);
+  };
+  const date = () =>
+    new Intl.DateTimeFormat("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+
+  const submitTransfer = () => {
+    const source = transferEmployer;
+    const request = {
+      id: `transfer-${source.id}-${Date.now()}`,
+      kind: "transfer",
+      type: "Transfer claim",
+      employerId: source.id,
+      destinationEmployerId: targetEmployer.id,
+      status: "submitted",
+      claimStatus: "Submitted",
+      progressStep: 0,
+      submittedAt: date(),
+      statusDates: [date()],
+    };
+    cancelTransfer();
+    onSubmitRequest(request);
+  };
+  const submitWithdrawal = () => {
+    const source = withdrawEmployer;
+    const request = {
+      id: `withdrawal-${source.id}-${Date.now()}`,
+      kind: "withdrawal",
+      type: "Withdrawal request",
+      employerId: source.id,
+      status: "submitted",
+      progressStep: 0,
+      submittedAt: date(),
+      statusDates: [date()],
+    };
+    cancelWithdrawal();
+    onSubmitRequest(request);
+  };
+
+  return (
+    <>
+      <Header
+        onLogout={onLogout}
+        currentView="employment"
+        onNavigate={onNavigate}
+      />
+      <main className="employment-details-page">
+        <button
+          className="passbook-back"
+          type="button"
+          onClick={() => onNavigate("dashboard")}
+        >
+          <span aria-hidden>←</span> Back to employments
+        </button>
+        <section className="employment-hero">
+          <span className="avatar">{employer.company[0]}</span>
+          <div>
+            <p className="eyebrow">EMPLOYMENT</p>
+            <h1>{employer.company}</h1>
+            <p>{employer.dates}</p>
+            <strong>Member ID: {employer.memberId}</strong>
+          </div>
+          <div className="employment-hero-balance">
+            <small>Total PF balance</small>
+            <strong>{money(employer.balance)}</strong>
+            <span>{serviceDuration(employer.serviceMonths)} service</span>
+          </div>
+        </section>
+        <section className="employment-contributions">
           <div className="section-heading">
             <div>
-              <h3>Recent contributions</h3>
+              <h2>Recent contributions</h2>
               <p>Last 3 credited months</p>
             </div>
             <button
               className="contribution-passbook"
-              onClick={onPassbook}
+              type="button"
+              onClick={() => onPassbook(employer, false)}
               aria-label="View complete passbook"
             >
-              <span className="contribution-passbook-icon" aria-hidden>
-                ▤
-              </span>
+              <span aria-hidden>▤</span>
               <span className="contribution-passbook-label">
                 View complete passbook
               </span>
@@ -834,10 +1123,10 @@ function EmployerCard({
             <table>
               <thead>
                 <tr>
-                  <th scope="col">Transaction date</th>
-                  <th scope="col">Employee share (12%)</th>
-                  <th scope="col">Employer share (3.67%)</th>
-                  <th scope="col">Pension share (8.33%)</th>
+                  <th>Transaction date</th>
+                  <th>Employee share (12%)</th>
+                  <th>Employer share (3.67%)</th>
+                  <th>Pension share (8.33%)</th>
                 </tr>
               </thead>
               <tbody>
@@ -852,214 +1141,61 @@ function EmployerCard({
               </tbody>
             </table>
           </div>
-          <div className="actions">
-            {hasStatus ? (
-              <button className="primary" onClick={onTrackStatus}>
-                Track status
-              </button>
-            ) : (
-              <>
-                <button
-                  className="primary"
-                  aria-expanded={isManaging}
-                  aria-controls={`account-actions-${employer.id}`}
-                  onClick={() => setIsManaging((current) => !current)}
-                >
-                  Manage account
-                </button>
-                {isManaging && (
-                  <div
-                    className="managed-actions"
-                    id={`account-actions-${employer.id}`}
-                  >
-                    <button className="secondary" onClick={onTransferClaim}>
-                      Transfer Amount
-                    </button>
-                    <button className="secondary" onClick={onWithdrawalRequest}>
-                      Withdraw Amount
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </article>
-  );
-}
-function Dashboard({ onLogout, onPassbook }) {
-  const [open, setOpen] = useState(null);
-  const [selectedStatusEmployerId, setSelectedStatusEmployerId] =
-    useState(null);
-  const [submittedClaims, setSubmittedClaims] = useState({});
-  const [withdrawalRequests, setWithdrawalRequests] = useState({});
-  const [transferEmployer, setTransferEmployer] = useState(null);
-  const [targetEmployer, setTargetEmployer] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [withdrawEmployer, setWithdrawEmployer] = useState(null);
-  const [withdrawalForm, setWithdrawalForm] = useState(emptyWithdrawalForm);
-  const [showWithdrawalConfirmation, setShowWithdrawalConfirmation] =
-    useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const combinedBalance = employers.reduce(
-    (sum, employer) => sum + employer.balance,
-    0,
-  );
-  const totalServiceMonths = employers.reduce(
-    (sum, employer) => sum + employer.serviceMonths,
-    0,
-  );
-  const totalYears = Math.floor(totalServiceMonths / 12);
-  const remainingMonths = totalServiceMonths % 12;
-
-  useEffect(() => {
-    if (!successMessage) return undefined;
-    const timeout = globalThis.setTimeout(() => setSuccessMessage(""), 3000);
-    return () => globalThis.clearTimeout(timeout);
-  }, [successMessage]);
-
-  const cancelTransfer = () => {
-    setTransferEmployer(null);
-    setTargetEmployer(null);
-    setShowConfirmation(false);
-  };
-
-  const submitTransferClaim = () => {
-    const submissionDate = new Intl.DateTimeFormat("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date());
-    const claim = {
-      type: "Transfer claim",
-      claimStatus: "Submitted",
-      progressStep: 0,
-      statusDates: [submissionDate],
-      targetEmployerId: targetEmployer.id,
-    };
-
-    setSubmittedClaims((claims) => ({
-      ...claims,
-      [transferEmployer.id]: claim,
-    }));
-    setSelectedStatusEmployerId(transferEmployer.id);
-    setSuccessMessage("Transfer claim submitted successfully.");
-    cancelTransfer();
-  };
-
-  const cancelWithdrawal = () => {
-    setWithdrawEmployer(null);
-    setWithdrawalForm(emptyWithdrawalForm);
-    setShowWithdrawalConfirmation(false);
-  };
-
-  const submitWithdrawalRequest = () => {
-    const submissionDate = new Intl.DateTimeFormat("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date());
-    setWithdrawalRequests((requests) => ({
-      ...requests,
-      [withdrawEmployer.id]: {
-        type: "Withdrawal request",
-        progressStep: 0,
-        statusDates: [submissionDate],
-      },
-    }));
-    setSelectedStatusEmployerId(withdrawEmployer.id);
-    setSuccessMessage("Withdrawal request submitted successfully.");
-    cancelWithdrawal();
-  };
-
-  return (
-    <>
-      <Header onLogout={onLogout} />
-      <main id="dashboard">
-        <div className="welcome">
-          <div>
-            <p className="eyebrow">MEMBER HOME</p>
-            <h1>Good morning, Ananya.</h1>
-            <p>Here’s a clear view of your provident fund accounts.</p>
-          </div>
-        </div>
-        <section className="member-overview" aria-label="Member overview">
-          <div className="overview-metrics">
-            <div className="overview-balance">
-              <small>Combined balance</small>
-              <strong>{money(combinedBalance)}</strong>
-            </div>
-            <div className="experience">
-              <small>Total experience</small>
-              <strong>
-                {totalYears} years {remainingMonths} months
-              </strong>
-            </div>
-          </div>
-          <div className="overview-uan">
-            <div className="overview-uan-icon" aria-hidden>
-              U
-            </div>
-            <div>
-              <small>Universal Account Number (UAN)</small>
-              <strong>UAN ending •••• {uan.slice(-4)}</strong>
-            </div>
-            <span className="verified-pill">
-              <span aria-hidden>✓</span> Verified
-            </span>
-          </div>
         </section>
-        <section className="accounts">
-          <div className="accounts-title">
-            <div>
-              <h2>Your employments</h2>
-              <p>Most recent employment first</p>
+        {employerRequests.length > 0 && (
+          <section className="employment-requests">
+            <div className="section-heading">
+              <div>
+                <h2>Requests</h2>
+                <p>Activity for this employment</p>
+              </div>
             </div>
-            <span>{employers.length} accounts</span>
+            {employerRequests.map((request) => (
+              <RequestSummary
+                key={request.id}
+                request={request}
+                employer={employer}
+                onTrack={() =>
+                  onNavigate("requests", { requestId: request.id })
+                }
+              />
+            ))}
+          </section>
+        )}
+        <section className="manage-funds" aria-labelledby="manage-funds-title">
+          <div>
+            <p className="eyebrow">SERVICES</p>
+            <h2 id="manage-funds-title">Manage funds</h2>
+            <p>Choose a service when you are ready to make a request.</p>
           </div>
-          {employers.map((employer) => (
-            <EmployerCard
-              key={employer.id}
-              employer={employer}
-              claim={submittedClaims[employer.id] || employer.claim}
-              withdrawalRequest={withdrawalRequests[employer.id]}
-              expanded={open === employer.id}
-              onToggle={() =>
-                setOpen(open === employer.id ? null : employer.id)
-              }
-              onPassbook={() => onPassbook(employer, false)}
-              onTransferClaim={() => {
-                setTransferEmployer(employer);
-                setTargetEmployer(null);
-                setShowConfirmation(false);
-              }}
-              onWithdrawalRequest={() => {
+          <div className="manage-funds-actions">
+            <button
+              className="secondary"
+              type="button"
+              disabled={Boolean(transferRequest) && !transferCanBeRetried}
+              onClick={() => setTransferEmployer(employer)}
+            >
+              {transferCanBeRetried
+                ? "Retry transfer"
+                : transferRequest
+                  ? "Transfer already requested"
+                  : "Transfer Amount"}
+            </button>
+            <button
+              className="primary"
+              type="button"
+              disabled={Boolean(withdrawalRequest)}
+              onClick={() => {
                 setWithdrawEmployer(employer);
                 setWithdrawalForm(emptyWithdrawalForm);
-                setShowWithdrawalConfirmation(false);
               }}
-              onTrackStatus={() => setSelectedStatusEmployerId(employer.id)}
-            />
-          ))}
-        </section>
-        <button
-          id="passbook"
-          className="passbook"
-          onClick={() => onPassbook(employers[0], true)}
-        >
-          <span>▤</span>
-          <span>
-            <strong>View complete passbook</strong>
-            <small>All contributions and transactions in one place</small>
-          </span>
-          <b>→</b>
-        </button>
-        {successMessage && (
-          <div className="success-toast" role="status" aria-live="polite">
-            <span aria-hidden>✓</span> {successMessage}
+            >
+              {withdrawalRequest
+                ? "Withdrawal already requested"
+                : "Withdraw Amount"}
+            </button>
           </div>
-        )}
+        </section>
       </main>
       {transferEmployer && !showConfirmation && (
         <TransferClaimModal
@@ -1075,7 +1211,7 @@ function Dashboard({ onLogout, onPassbook }) {
           sourceEmployer={transferEmployer}
           targetEmployer={targetEmployer}
           onNo={() => setShowConfirmation(false)}
-          onYes={submitTransferClaim}
+          onYes={submitTransfer}
         />
       )}
       {withdrawEmployer && !showWithdrawalConfirmation && (
@@ -1091,27 +1227,117 @@ function Dashboard({ onLogout, onPassbook }) {
         <WithdrawalConfirmationModal
           form={withdrawalForm}
           onNo={() => setShowWithdrawalConfirmation(false)}
-          onYes={submitWithdrawalRequest}
+          onYes={submitWithdrawal}
         />
       )}
-      {selectedStatusEmployerId &&
-        (() => {
-          const statusEmployer = employers.find(
-            (employer) => employer.id === selectedStatusEmployerId,
-          );
-          return statusEmployer ? (
-            <StatusDetailsModal
-              employer={statusEmployer}
-              claim={submittedClaims[statusEmployer.id] || statusEmployer.claim}
-              withdrawalRequest={withdrawalRequests[statusEmployer.id]}
-              onClose={() => setSelectedStatusEmployerId(null)}
-            />
-          ) : null;
-        })()}
     </>
   );
 }
-function Passbook({ employer, allowEmployerSelection, onBack, onLogout }) {
+
+function Requests({ requests, selectedRequestId, onLogout, onNavigate }) {
+  const orderedRequests = sortRequests(requests);
+  const selectedRequest = requests.find(
+    (request) => request.id === selectedRequestId,
+  );
+  const selectedEmployer =
+    selectedRequest &&
+    employers.find((employer) => employer.id === selectedRequest.employerId);
+  return (
+    <>
+      <Header
+        onLogout={onLogout}
+        currentView="requests"
+        onNavigate={onNavigate}
+      />
+      <main className="requests-page">
+        <div className="page-heading">
+          <p className="eyebrow">REQUESTS</p>
+          <h1>Track your requests</h1>
+          <p>
+            Transfers and withdrawals are kept together, with items needing
+            attention shown first.
+          </p>
+        </div>
+        <section className="requests-list" aria-label="Your requests">
+          {orderedRequests.length ? (
+            orderedRequests.map((request) => (
+              <RequestSummary
+                key={request.id}
+                request={request}
+                employer={employers.find(
+                  (item) => item.id === request.employerId,
+                )}
+                onTrack={() =>
+                  onNavigate("requests", { requestId: request.id })
+                }
+              />
+            ))
+          ) : (
+            <div className="empty-state">
+              <h2>No requests yet</h2>
+              <p>Your transfer and withdrawal requests will appear here.</p>
+            </div>
+          )}
+        </section>
+      </main>
+      <StatusDetailsModal
+        request={selectedRequest}
+        employer={selectedEmployer}
+        onClose={() => onNavigate("requests")}
+      />
+    </>
+  );
+}
+
+function ProfilePage({ onLogout, onNavigate }) {
+  const services = ["KYC", "Change phone number", "E-Nomination", "UAN Card"];
+  return (
+    <>
+      <Header
+        onLogout={onLogout}
+        currentView="profile"
+        onNavigate={onNavigate}
+      />
+      <main className="profile-page">
+        <div className="page-heading">
+          <p className="eyebrow">PROFILE</p>
+          <h1>{memberName}</h1>
+          <p>Your member identity and account services.</p>
+        </div>
+        <section className="profile-identity">
+          <span className="avatar">AK</span>
+          <div>
+            <small>Universal Account Number (UAN)</small>
+            <strong>{uan}</strong>
+            <span className="verified-pill">
+              <span aria-hidden>✓</span> Verified
+            </span>
+          </div>
+        </section>
+        <section
+          className="profile-services"
+          aria-labelledby="profile-services-title"
+        >
+          <h2 id="profile-services-title">Member services</h2>
+          {services.map((service) => (
+            <div className="profile-service" key={service}>
+              <strong>{service}</strong>
+              <span>Coming soon</span>
+            </div>
+          ))}
+        </section>
+      </main>
+    </>
+  );
+}
+
+function Passbook({
+  employer,
+  allowEmployerSelection,
+  onBack,
+  onLogout,
+  onNavigate,
+}) {
   const [financialYear, setFinancialYear] = useState(financialYears[0]);
   const [selectedEmployer, setSelectedEmployer] = useState(employer);
   const entries = buildPassbookEntries(selectedEmployer, financialYear);
@@ -1134,7 +1360,11 @@ function Passbook({ employer, allowEmployerSelection, onBack, onLogout }) {
 
   return (
     <>
-      <Header onLogout={onLogout} />
+      <Header
+        onLogout={onLogout}
+        currentView="passbook"
+        onNavigate={onNavigate}
+      />
       <main className="passbook-page">
         <button className="passbook-back" onClick={onBack}>
           <span aria-hidden>←</span> Back to employments
@@ -1339,17 +1569,17 @@ const chatAnswers = [
   {
     keywords: ["balance", "total pf"],
     response:
-      "Your combined PF balance is shown at the top of the member dashboard. Expand an employer to review its individual balance and contributions.",
+      "Your combined PF balance is shown at the top of the member dashboard. Open an employment to review its individual balance and contributions.",
   },
   {
     keywords: ["transfer", "claim"],
     response:
-      "To transfer PF funds, expand the previous employer, select Transfer Amount, choose the destination employer, and confirm the request. You can track it from the same row after submission.",
+      "To transfer PF funds, open the previous employment, go to Manage funds, and select Transfer Amount. Track the submitted request from Requests.",
   },
   {
     keywords: ["withdraw", "advance", "form-31"],
     response:
-      "Expand an employer and choose Withdraw Amount. Complete the PF Advance form, review the eligible amount, and confirm the submission. A tracking action appears after it is submitted.",
+      "Open an employment, go to Manage funds, and choose Withdraw Amount. After confirmation, track the request from Requests.",
   },
   {
     keywords: ["passbook", "contribution"],
@@ -1359,7 +1589,7 @@ const chatAnswers = [
   {
     keywords: ["uan", "universal account"],
     response:
-      "Your verified Universal Account Number is displayed prominently at the top of the dashboard. The same UAN links your employment member IDs.",
+      "Your complete Universal Account Number is available in Profile. A masked UAN appears on Home, and the same UAN links your employment member IDs.",
   },
 ];
 
@@ -1458,9 +1688,7 @@ function ChatAssistant() {
         className="chat-bubble"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        aria-label={
-          isOpen ? "Close EPFO One assistant" : "Open EPFO One assistant"
-        }
+        aria-label={isOpen ? "Close EPFO assistant" : "Open EPFO assistant"}
       >
         <span aria-hidden>{isOpen ? "×" : "✦"}</span>
         {!isOpen && <small>Ask EPFO One</small>}
@@ -1471,33 +1699,121 @@ function ChatAssistant() {
 
 function App() {
   const [signedIn, setSignedIn] = useState(false);
-  const [passbookView, setPassbookView] = useState(null);
-  let page = <Login onVerify={() => setSignedIn(true)} />;
+  const [view, setView] = useState({ name: "dashboard" });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [requests, setRequests] = useState(() =>
+    employers
+      .filter((employer) => employer.claim)
+      .map((employer) => ({
+        ...employer.claim,
+        id: `transfer-${employer.id}`,
+        kind: "transfer",
+        employerId: employer.id,
+        status:
+          employer.claim.claimStatus === "Rejected"
+            ? "rejected"
+            : employer.claim.claimStatus === "Processed"
+              ? "completed"
+              : "progress",
+        submittedAt: employer.claim.statusDates[0],
+      })),
+  );
 
-  if (signedIn && passbookView) {
-    page = (
-      <Passbook
-        employer={passbookView.employer}
-        allowEmployerSelection={passbookView.allowEmployerSelection}
-        onBack={() => setPassbookView(null)}
-        onLogout={() => setSignedIn(false)}
-      />
+  useEffect(() => {
+    if (!successMessage) return undefined;
+    const timeout = globalThis.setTimeout(() => setSuccessMessage(""), 3000);
+    return () => globalThis.clearTimeout(timeout);
+  }, [successMessage]);
+
+  const navigate = (name, details = {}) => setView({ name, ...details });
+  const logout = () => {
+    setSignedIn(false);
+    setView({ name: "dashboard" });
+  };
+  const openPassbook = (employer, allowEmployerSelection) =>
+    setView({
+      name: "passbook",
+      employerId: employer.id,
+      allowEmployerSelection,
+    });
+  const submitRequest = (request) => {
+    setRequests((current) => [...current, request]);
+    setSuccessMessage(
+      request.kind === "transfer"
+        ? "Transfer claim submitted successfully."
+        : "Withdrawal request submitted successfully.",
     );
-  } else if (signedIn) {
-    page = (
-      <Dashboard
-        onPassbook={(employer, allowEmployerSelection) =>
-          setPassbookView({ employer, allowEmployerSelection })
-        }
-        onLogout={() => setSignedIn(false)}
-      />
-    );
+    setView({ name: "requests", requestId: request.id });
+  };
+
+  let page = <Login onVerify={() => setSignedIn(true)} />;
+  if (signedIn) {
+    if (view.name === "employment") {
+      page = (
+        <EmploymentDetails
+          employer={
+            employers.find((employer) => employer.id === view.employerId) ||
+            employers[0]
+          }
+          requests={requests}
+          onLogout={logout}
+          onNavigate={navigate}
+          onPassbook={openPassbook}
+          onSubmitRequest={submitRequest}
+        />
+      );
+    } else if (view.name === "requests") {
+      page = (
+        <Requests
+          requests={requests}
+          selectedRequestId={view.requestId}
+          onLogout={logout}
+          onNavigate={navigate}
+        />
+      );
+    } else if (view.name === "profile") {
+      page = <ProfilePage onLogout={logout} onNavigate={navigate} />;
+    } else if (view.name === "passbook") {
+      page = (
+        <Passbook
+          employer={
+            employers.find((employer) => employer.id === view.employerId) ||
+            employers[0]
+          }
+          allowEmployerSelection={view.allowEmployerSelection}
+          onBack={() =>
+            navigate(view.allowEmployerSelection ? "dashboard" : "employment", {
+              employerId: view.employerId,
+            })
+          }
+          onLogout={logout}
+          onNavigate={navigate}
+        />
+      );
+    } else {
+      page = (
+        <Dashboard
+          requests={requests}
+          onPassbook={openPassbook}
+          onLogout={logout}
+          onNavigate={navigate}
+        />
+      );
+    }
   }
 
   return (
     <>
       {page}
-      <ChatAssistant />
+      {signedIn && (
+        <MobileNavigation currentView={view.name} onNavigate={navigate} />
+      )}
+      {signedIn && <ChatAssistant />}
+      {successMessage && (
+        <div className="success-toast" role="status" aria-live="polite">
+          <span aria-hidden>✓</span> {successMessage}
+        </div>
+      )}
     </>
   );
 }
