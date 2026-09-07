@@ -3337,3 +3337,84 @@ textarea {
     align-self: flex-start;
   }
 }
+
+/* Application language controls */
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Noto Sans",
+    "Noto Sans Devanagari",
+    "Noto Sans Kannada",
+    "Noto Sans Tamil",
+    "Segoe UI",
+    sans-serif;
+}
+.localized-root {
+  min-height: 100%;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  min-width: 0;
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+.language-selector select {
+  min-height: 44px;
+  max-width: 9.5rem;
+  padding: 0.45rem 1.8rem 0.45rem 0.65rem;
+  border: 1px solid var(--line, #d5d9e0);
+  border-radius: 0.65rem;
+  background: var(--surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+.language-selector select:focus-visible {
+  outline: 3px solid #f5a623;
+  outline-offset: 2px;
+}
+.login-language-selector {
+  position: absolute;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+}
+:is(button, label, small, span, p, h1, h2, th, td) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .language-selector > span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .language-selector select {
+    max-width: 7rem;
+  }
+  header {
+    gap: 0.35rem;
+  }
+  .header-actions {
+    gap: 0.35rem;
+  }
+}
+@media (max-width: 340px) {
+  .brand-button b {
+    display: none;
+  }
+  .language-selector select {
+    max-width: 6.5rem;
+    padding-inline-start: 0.4rem;
+  }
+}
