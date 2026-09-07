@@ -1,10 +1,10 @@
 /** Application copy is kept in one stable, namespaced catalogue. */
 export const languageNames = {
   en: "English",
-  hi: "हिन्दी",
-  mr: "मराठी",
-  kn: "ಕನ್ನಡ",
-  ta: "தமிழ்",
+  hi: "Hindi",
+  mr: "Marathi",
+  kn: "Kannada",
+  ta: "Tamil",
 };
 export const supportedLanguages = Object.keys(languageNames);
 
@@ -273,20 +273,19 @@ const translationsByLanguage = {
     Completed: "முடிந்தது",
   },
 };
-const prefixes = { hi: "हिन्दी", mr: "मराठी", kn: "ಕನ್ನಡ", ta: "தமிழ்" };
-const localize = (locale, value) =>
-  translationsByLanguage[locale][value] || `${prefixes[locale]} · ${value}`;
+const translatedCatalogue = (locale) =>
+  Object.fromEntries(
+    Object.entries(en).map(([key, value]) => [
+      key,
+      translationsByLanguage[locale][value] ?? value,
+    ]),
+  );
 export const translations = {
   en,
   ...Object.fromEntries(
-    Object.keys(prefixes).map((locale) => [
+    Object.keys(translationsByLanguage).map((locale) => [
       locale,
-      Object.fromEntries(
-        Object.entries(en).map(([key, value]) => [
-          key,
-          localize(locale, value),
-        ]),
-      ),
+      translatedCatalogue(locale),
     ]),
   ),
 };

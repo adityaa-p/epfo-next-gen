@@ -157,7 +157,7 @@ test("supports dismissible profile and status overlays", () => {
 });
 
 const catalogue = await import("../src/i18n/translations.js");
-test("localization catalogue has five native-named, key-complete locales", () => {
+test("localization catalogue has five named, key-complete locales", () => {
   assert.deepEqual(catalogue.supportedLanguages, [
     "en",
     "hi",
@@ -167,10 +167,10 @@ test("localization catalogue has five native-named, key-complete locales", () =>
   ]);
   assert.deepEqual(Object.values(catalogue.languageNames), [
     "English",
-    "हिन्दी",
-    "मराठी",
-    "ಕನ್ನಡ",
-    "தமிழ்",
+    "Hindi",
+    "Marathi",
+    "Kannada",
+    "Tamil",
   ]);
   const englishKeys = Object.keys(catalogue.translations.en).sort();
   for (const code of catalogue.supportedLanguages)
@@ -178,6 +178,15 @@ test("localization catalogue has five native-named, key-complete locales", () =>
       Object.keys(catalogue.translations[code]).sort(),
       englishKeys,
     );
+});
+
+test("missing translations remain readable without fabricated locale labels", () => {
+  for (const code of catalogue.supportedLanguages.slice(1)) {
+    assert.equal(
+      catalogue.translations[code]["dashboard.greeting"],
+      catalogue.translations.en["dashboard.greeting"],
+    );
+  }
 });
 
 test("claim progress translation keys preserve semantic ordering", () => {

@@ -4,7 +4,6 @@ import "./styles.css";
 import {
   LanguageProvider,
   LanguageSelector,
-  LocalizedContent,
   useLanguage,
 } from "./i18n/LanguageProvider.jsx";
 
@@ -2029,7 +2028,7 @@ function App() {
   }
 
   return (
-    <LocalizedContent>
+    <>
       {page}
       {signedIn && (
         <MobileNavigation currentView={view.name} onNavigate={navigate} />
@@ -2040,7 +2039,7 @@ function App() {
           <span aria-hidden>✓</span> {successMessage}
         </div>
       )}
-    </LocalizedContent>
+    </>
   );
 }
 

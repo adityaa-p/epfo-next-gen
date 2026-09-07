@@ -65,7 +65,7 @@ The workflow runs formatting, linting, tests, and the production build before up
 
 ## Localization
 
-EPFO One supports English (`en`), Hindi (`hi`), Marathi (`mr`), Kannada (`kn`), and Tamil (`ta`). The language control is available before and after sign-in. A selection is stored in the browser under `epfo-one-language`, so it survives navigation, refreshes, and sign-out; the browser language is used on a first visit.
+EPFO One offers English (`en`), Hindi (`hi`), Marathi (`mr`), Kannada (`kn`), and Tamil (`ta`) in the language control before and after sign-in. A selection is stored in the browser under `epfo-one-language`, so it survives navigation, refreshes, and sign-out; the browser language is used on a first visit. Copy without a catalogue translation remains in English rather than being altered with a locale label.
 
 Application copy uses stable, namespaced keys in `src/i18n/translations.js`. `src/i18n/LanguageProvider.jsx` owns language detection, English fallback, interpolation, and locale-aware number/date helpers. CSV column labels and totals are sourced from the same catalogue so exports can follow the active UI language.
 
