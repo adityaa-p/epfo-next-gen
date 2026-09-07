@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -138,6 +138,7 @@ const emptyWithdrawalForm = {
 };
 const financialYears = [2026, 2025, 2024];
 const requestStorageKey = "epfo-one-requests";
+const defaultView = { name: "dashboard" };
 const financialYearLabel = (startYear) =>
   `${startYear}–${String(startYear + 1).slice(-2)}`;
 const buildPassbookEntries = (employer, startYear) => {
@@ -185,6 +186,35 @@ const serviceDuration = (months) => {
   return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
 };
 
+function viewFromHash() {
+  const [name = "dashboard", id, option] = globalThis.location?.hash
+    ?.replace(/^#\/?/, "")
+    .split("/") || ["dashboard"];
+  if (name === "employment" && id) return { name, employerId: id };
+  if (name === "requests") return { name, requestId: id || undefined };
+  if (name === "profile") return { name };
+  if (name === "passbook" && id) {
+    return {
+      name,
+      employerId: id,
+      allowEmployerSelection: option === "all",
+    };
+  }
+  return defaultView;
+}
+
+function hashFromView(view) {
+  if (view.name === "employment") return `#employment/${view.employerId}`;
+  if (view.name === "requests") {
+    return `#requests${view.requestId ? `/${view.requestId}` : ""}`;
+  }
+  if (view.name === "profile") return "#profile";
+  if (view.name === "passbook") {
+    return `#passbook/${view.employerId}${view.allowEmployerSelection ? "/all" : ""}`;
+  }
+  return "#dashboard";
+}
+
 const escapeCsvValue = (value) => `"${String(value).replaceAll('"', '""')}"`;
 
 function downloadPassbookCsv(employer, financialYear, entries, totals) {
@@ -228,6 +258,26 @@ function downloadPassbookCsv(employer, financialYear, entries, totals) {
 
 function Header({ onLogout, currentView = "dashboard", onNavigate }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) return undefined;
+    const closeMenu = (event) => {
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (
+        event.type === "pointerdown" &&
+        profileMenuRef.current?.contains(event.target)
+      )
+        return;
+      setIsProfileMenuOpen(false);
+    };
+    document.addEventListener("keydown", closeMenu);
+    document.addEventListener("pointerdown", closeMenu);
+    return () => {
+      document.removeEventListener("keydown", closeMenu);
+      document.removeEventListener("pointerdown", closeMenu);
+    };
+  }, [isProfileMenuOpen]);
 
   return (
     <header>
@@ -254,7 +304,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
           </button>
         ))}
       </nav>
-      <div className="profile-menu-wrap">
+      <div className="profile-menu-wrap" ref={profileMenuRef}>
         <button
           className="profile"
           onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
@@ -846,9 +896,24 @@ function RequestSummary({ request, employer, onTrack }) {
 }
 
 function StatusDetailsModal({ request, employer, onClose }) {
+  useEffect(() => {
+    if (!request) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [request, onClose]);
+
   if (!request || !employer) return null;
   return (
-    <div className="modal-backdrop" role="presentation">
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <section
         className="modal-card status-details-modal"
         role="dialog"
@@ -868,6 +933,7 @@ function StatusDetailsModal({ request, employer, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close status details"
+            autoFocus
           >
             ×
           </button>
@@ -1841,7 +1907,7 @@ function ChatAssistant() {
 
 function App() {
   const [signedIn, setSignedIn] = useState(false);
-  const [view, setView] = useState({ name: "dashboard" });
+  const [view, setView] = useState(viewFromHash);
   const [successMessage, setSuccessMessage] = useState("");
   const [requests, setRequests] = useState(initialRequests);
 
@@ -1862,14 +1928,24 @@ function App() {
     }
   }, [requests]);
 
-  const navigate = (name, details = {}) => setView({ name, ...details });
+  useEffect(() => {
+    const followBrowserNavigation = () => setView(viewFromHash());
+    globalThis.addEventListener?.("hashchange", followBrowserNavigation);
+    return () =>
+      globalThis.removeEventListener?.("hashchange", followBrowserNavigation);
+  }, []);
+
+  const navigate = (name, details = {}) => {
+    const nextView = { name, ...details };
+    setView(nextView);
+    if (globalThis.location) globalThis.location.hash = hashFromView(nextView);
+  };
   const logout = () => {
     setSignedIn(false);
-    setView({ name: "dashboard" });
+    navigate("dashboard");
   };
   const openPassbook = (employer, allowEmployerSelection) =>
-    setView({
-      name: "passbook",
+    navigate("passbook", {
       employerId: employer.id,
       allowEmployerSelection,
     });
@@ -1880,7 +1956,7 @@ function App() {
         ? "Transfer claim submitted successfully."
         : "Withdrawal request submitted successfully.",
     );
-    setView({ name: "requests", requestId: request.id });
+    navigate("requests", { requestId: request.id });
   };
 
   let page = <Login onVerify={() => setSignedIn(true)} />;

@@ -132,3 +132,26 @@ test("persists requests and exports the selected passbook", () => {
     "text/csv",
   ]);
 });
+
+test("supports shareable browser navigation", () => {
+  assertStrings([
+    "viewFromHash",
+    "hashFromView",
+    '"hashchange"',
+    '"#dashboard"',
+    '"#profile"',
+    "#employment/",
+    "#requests",
+    "#passbook/",
+  ]);
+});
+
+test("supports dismissible profile and status overlays", () => {
+  assertStrings([
+    'event.key === "Escape"',
+    '"pointerdown"',
+    "profileMenuRef",
+    "event.target === event.currentTarget",
+    "autoFocus",
+  ]);
+});

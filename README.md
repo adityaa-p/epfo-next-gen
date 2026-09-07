@@ -4,6 +4,8 @@ A mobile- and tablet-first React prototype for a clearer EPFO member experience.
 
 Phase 3 hardens the prototype journey with a resend cooldown and mobile-number correction during mock OTP sign-in, local request persistence across browser refreshes, and downloadable CSV passbooks for the selected employer and financial year.
 
+Phase 4 adds GitHub Pages-compatible hash navigation for shareable employment, requests, profile, and passbook views. Browser Back and Forward navigation now restores the corresponding view, while profile and request-status overlays support Escape and outside-click dismissal.
+
 ## Member journeys
 
 ### Review an employment and its passbook
