@@ -3418,3 +3418,47 @@ textarea {
     padding-inline-start: 0.4rem;
   }
 }
+
+/* Localization: Indic scripts need natural line breaking and intrinsic sizing. */
+:is(
+    .signed-in-nav,
+    .mobile-nav,
+    .employer,
+    .modal-card,
+    .modal-actions,
+    .passbook-table
+  )
+  :is(button, label, th, td, strong, small, span) {
+  min-width: 0;
+  height: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.modal-actions,
+.manage-funds-actions,
+.header-actions {
+  flex-wrap: wrap;
+}
+
+.passbook-table th {
+  min-width: 7.5rem;
+  vertical-align: top;
+}
+
+@media (max-width: 360px) {
+  .language-selector,
+  .modal-actions > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .signed-in-nav,
+  .employer-summary,
+  .modal-actions {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+}

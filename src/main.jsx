@@ -165,14 +165,14 @@ const buildPassbookEntries = (employer, startYear) => {
   const epfWages = 30000 - employerIndex * 5000;
   const epsWages = 15000;
 
-  return months.map(([month, monthIndex], index) => {
+  return months.map(([_month, monthIndex], index) => {
     const wageYear = index < 9 ? startYear : startYear + 1;
     const transactionMonthIndex = (monthIndex + 1) % 12;
     const transactionYear =
       transactionMonthIndex === 0 ? wageYear + 1 : wageYear;
     return {
-      wageMonth: `${month} ${wageYear}`,
-      transactionDate: `10 ${new Intl.DateTimeFormat("en-IN", { month: "long" }).format(new Date(transactionYear, transactionMonthIndex, 10))} ${transactionYear}`,
+      wageDate: new Date(wageYear, monthIndex, 1),
+      transactionDate: new Date(transactionYear, transactionMonthIndex, 10),
       epfWages,
       epsWages,
       employeeShare: Math.round(epfWages * 0.12),
@@ -181,15 +181,17 @@ const buildPassbookEntries = (employer, startYear) => {
     };
   });
 };
-const money = (amount) =>
-  new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(amount);
-const serviceDuration = (months) => {
+const serviceDuration = (months, t, formatNumber) => {
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
-  return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
+  const unit = (name, count) =>
+    t(`unit.${name}_${count === 1 ? "one" : "other"}`, {
+      count: formatNumber(count),
+    });
+  return `${unit("year", years)} ${unit("month", remainingMonths)}`;
 };
+const parseEnglishDate = (value) =>
+  new Date(value.replace("Present", new Date().toISOString()));
 
 function viewFromHash() {
   const [name = "dashboard", id, option] = globalThis.location?.hash
@@ -262,6 +264,7 @@ function downloadPassbookCsv(employer, financialYear, entries, totals, t) {
 }
 
 function Header({ onLogout, currentView = "dashboard", onNavigate }) {
+  const { t } = useLanguage();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
@@ -290,11 +293,11 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
         className="brand brand-button"
         type="button"
         onClick={() => onNavigate?.("dashboard")}
-        aria-label="EPFO One home"
+        aria-label={t("nav.brandHome")}
       >
         <span>e</span> EPFO <b>one</b>
       </button>
-      <nav className="signed-in-nav" aria-label="Primary navigation">
+      <nav className="signed-in-nav" aria-label={t("nav.primary")}>
         {["dashboard", "requests", "profile"].map((destination) => (
           <button
             key={destination}
@@ -303,9 +306,11 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
             aria-current={currentView === destination ? "page" : undefined}
             onClick={() => onNavigate?.(destination)}
           >
-            {destination === "dashboard"
-              ? "Home"
-              : destination[0].toUpperCase() + destination.slice(1)}
+            {t(
+              destination === "dashboard"
+                ? "common.home"
+                : `common.${destination}`,
+            )}
           </button>
         ))}
       </nav>
@@ -316,7 +321,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
             className="profile"
             onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
             aria-label={
-              isProfileMenuOpen ? "Close profile menu" : "Open profile menu"
+              isProfileMenuOpen ? t("nav.closeProfile") : t("nav.openProfile")
             }
             aria-haspopup="menu"
             aria-expanded={isProfileMenuOpen}
@@ -324,12 +329,18 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
             AK
           </button>
           {isProfileMenuOpen && (
-            <div className="profile-menu" role="menu" aria-label="Profile menu">
+            <div
+              className="profile-menu"
+              role="menu"
+              aria-label={t("nav.profileMenu")}
+            >
               <div className="profile-menu-summary">
                 <span>AK</span>
                 <div>
                   <strong>{memberName}</strong>
-                  <small>UAN ending •••• {uan.slice(-4)}</small>
+                  <small>
+                    {t("dashboard.uanEnding", { suffix: uan.slice(-4) })}
+                  </small>
                 </div>
               </div>
               <div className="profile-menu-options">
@@ -340,7 +351,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
                     onNavigate?.("profile");
                   }}
                 >
-                  <span aria-hidden>◉</span> Profile
+                  <span aria-hidden>◉</span> {t("common.profile")}
                 </button>
                 <button
                   role="menuitem"
@@ -349,7 +360,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
                     onNavigate?.("profile");
                   }}
                 >
-                  <span aria-hidden>✓</span> KYC
+                  <span aria-hidden>✓</span> {t("profile.kyc")}
                 </button>
                 <button
                   role="menuitem"
@@ -358,7 +369,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
                     onNavigate?.("profile");
                   }}
                 >
-                  <span aria-hidden>⌕</span> Change phone no
+                  <span aria-hidden>⌕</span> {t("profile.changePhoneShort")}
                 </button>
                 <button
                   role="menuitem"
@@ -367,7 +378,7 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
                     onNavigate?.("profile");
                   }}
                 >
-                  <span aria-hidden>♧</span> E-Nomination
+                  <span aria-hidden>♧</span> {t("profile.nomination")}
                 </button>
                 <button
                   role="menuitem"
@@ -376,11 +387,11 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
                     onNavigate?.("profile");
                   }}
                 >
-                  <span aria-hidden>▤</span> UAN Card
+                  <span aria-hidden>▤</span> {t("profile.uanCard")}
                 </button>
               </div>
               <button className="profile-menu-logout" onClick={onLogout}>
-                <span aria-hidden>↪</span> Sign out
+                <span aria-hidden>↪</span> {t("common.signOut")}
               </button>
             </div>
           )}
@@ -391,8 +402,9 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
 }
 
 function MobileNavigation({ currentView, onNavigate }) {
+  const { t } = useLanguage();
   return (
-    <nav className="mobile-nav" aria-label="Mobile primary navigation">
+    <nav className="mobile-nav" aria-label={t("nav.mobile")}>
       {[
         ["dashboard", "Home", "⌂"],
         ["requests", "Requests", "◎"],
@@ -413,13 +425,14 @@ function MobileNavigation({ currentView, onNavigate }) {
   );
 }
 function ClaimProgress({ claim }) {
+  const { t } = useLanguage();
   const [showRejectionDetails, setShowRejectionDetails] = useState(false);
 
   return (
     <>
       <section className="claim" aria-label={`${claim.type} status`}>
         <div className="claim-title">
-          <span className="status-dot" /> Claim status
+          <span className="status-dot" /> {t("request.claimStatus")}
         </div>
         <ol className="progress">
           {steps.map((step, i) => {
@@ -434,7 +447,13 @@ function ClaimProgress({ claim }) {
                 style={{ "--step": i }}
               >
                 <span>{isRejected ? "×" : isComplete ? "✓" : i + 1}</span>
-                <small>{isRejected ? "Rejected by field office" : step}</small>
+                <small>
+                  {isRejected
+                    ? t("request.rejected")
+                    : t(
+                        `progress.transfer.${["submitted", "pendingEmployer", "approvedEmployer", "pendingOffice", "approvedOfficer", "done"][i]}`,
+                      )}
+                </small>
                 {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
                 {isRejected && (
                   <button
@@ -460,6 +479,7 @@ function ClaimProgress({ claim }) {
 }
 
 function RejectionDetailsModal({ claim, onClose }) {
+  const { t } = useLanguage();
   return (
     <div className="modal-backdrop rejection-backdrop" role="presentation">
       <section
@@ -472,7 +492,7 @@ function RejectionDetailsModal({ claim, onClose }) {
         <span className="rejection-modal-icon" aria-hidden>
           ×
         </span>
-        <p className="eyebrow">CLAIM UPDATE</p>
+        <p className="eyebrow">{t("request.update")}</p>
         <h2 id="rejection-modal-title">{claim.rejectionTitle}</h2>
         <p id="rejection-modal-message">{claim.rejectionMessage}</p>
         <small>{claim.rejectionReference}</small>
@@ -487,13 +507,14 @@ function RejectionDetailsModal({ claim, onClose }) {
 }
 
 function WithdrawalProgress({ request }) {
+  const { t } = useLanguage();
   return (
     <section
       className="claim withdrawal-progress"
-      aria-label="Withdrawal request status"
+      aria-label={t("request.withdrawalStatus")}
     >
       <div className="claim-title">
-        <span className="status-dot" /> Withdrawal request
+        <span className="status-dot" /> {t("request.withdrawalTitle")}
       </div>
       <ol className="progress withdrawal-progress-steps">
         {withdrawalSteps.map((step, index) => (
@@ -503,7 +524,11 @@ function WithdrawalProgress({ request }) {
             style={{ "--step": index }}
           >
             <span>{index <= request.progressStep ? "✓" : index + 1}</span>
-            <small>{step}</small>
+            <small>
+              {t(
+                `progress.withdrawal.${["submitted", "pendingOffice", "approvedOffice", "done"][index]}`,
+              )}
+            </small>
             {request.statusDates[index] && (
               <time>{request.statusDates[index]}</time>
             )}
@@ -521,6 +546,7 @@ function TransferClaimModal({
   onContinue,
   onTargetChange,
 }) {
+  const { t } = useLanguage();
   return (
     <div className="modal-backdrop" role="presentation">
       <section
@@ -531,16 +557,14 @@ function TransferClaimModal({
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">PF TRANSFER</p>
-            <h2 id="transfer-modal-title">Transfer your PF balance</h2>
-            <p>
-              Confirm the source and choose the employer receiving the funds.
-            </p>
+            <p className="eyebrow">{t("transfer.eyebrow")}</p>
+            <h2 id="transfer-modal-title">{t("transfer.title")}</h2>
+            <p>{t("transfer.help")}</p>
           </div>
           <button
             className="modal-close"
             onClick={onCancel}
-            aria-label="Close transfer claim dialog"
+            aria-label={t("transfer.close")}
           >
             ×
           </button>
@@ -548,9 +572,9 @@ function TransferClaimModal({
 
         <div className="transfer-parties">
           <div className="transfer-party source-party">
-            <span className="party-label">From</span>
+            <span className="party-label">{t("transfer.from")}</span>
             <strong>{employer.company}</strong>
-            <small>Member ID</small>
+            <small>{t("common.memberId")}</small>
             <b>{employer.memberId}</b>
           </div>
 
@@ -559,7 +583,7 @@ function TransferClaimModal({
           </span>
 
           <div className="transfer-party target-party">
-            <label htmlFor="target-employer">Transfer to</label>
+            <label htmlFor="target-employer">{t("transfer.to")}</label>
             <select
               id="target-employer"
               value={targetEmployer?.id || ""}
@@ -571,7 +595,7 @@ function TransferClaimModal({
                 )
               }
             >
-              <option value="">Select an employer</option>
+              <option value="">{t("transfer.select")}</option>
               {employers
                 .filter((candidate) => candidate.id !== employer.id)
                 .map((candidate) => (
@@ -582,7 +606,7 @@ function TransferClaimModal({
             </select>
             {targetEmployer && (
               <div className="selected-member">
-                <small>Member ID</small>
+                <small>{t("common.memberId")}</small>
                 <b>{targetEmployer.memberId}</b>
               </div>
             )}
@@ -607,6 +631,7 @@ function TransferClaimModal({
 }
 
 function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
+  const { t } = useLanguage();
   return (
     <div className="modal-backdrop confirmation-backdrop" role="presentation">
       <section
@@ -619,11 +644,12 @@ function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
         <span className="confirmation-icon" aria-hidden>
           ?
         </span>
-        <h2 id="confirmation-modal-title">Submit transfer claim?</h2>
+        <h2 id="confirmation-modal-title">{t("transfer.confirmTitle")}</h2>
         <p id="confirmation-modal-description">
-          Do you want to submit the claim to transfer funds from{" "}
-          <strong>{sourceEmployer.company}</strong> to{" "}
-          <strong>{targetEmployer.company}</strong>?
+          {t("transfer.confirm", {
+            source: sourceEmployer.company,
+            target: targetEmployer.company,
+          })}
         </p>
         <div className="modal-actions confirmation-actions">
           <button className="secondary" onClick={onNo}>
@@ -639,6 +665,7 @@ function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
 }
 
 function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
+  const { t, formatAmount } = useLanguage();
   const eligibleAmount = Math.floor(employer.balance * 0.8);
   const requestedAmount = Number(form.amount);
   const isComplete =
@@ -662,13 +689,13 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">ONLINE CLAIM</p>
-            <h2 id="withdrawal-modal-title">Withdrawal request</h2>
+            <p className="eyebrow">{t("withdraw.eyebrow")}</p>
+            <h2 id="withdrawal-modal-title">{t("withdraw.title")}</h2>
           </div>
           <button
             className="modal-close"
             onClick={onCancel}
-            aria-label="Close withdrawal request dialog"
+            aria-label={t("withdraw.close")}
           >
             ×
           </button>
@@ -676,73 +703,72 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
 
         <div className="claimant-summary">
           <div>
-            <small>Member name</small>
+            <small>{t("withdraw.memberName")}</small>
             <strong>{memberName}</strong>
           </div>
           <div>
-            <small>UAN</small>
+            <small>{t("common.uan")}</small>
             <strong>{uan}</strong>
           </div>
         </div>
 
         <div className="withdrawal-form">
           <label>
-            I want to apply for
+            {t("withdraw.apply")}
             <select
               value={form.applicationType}
               onChange={(event) =>
                 updateField("applicationType", event.target.value)
               }
             >
-              <option value="">Select claim type</option>
+              <option value="">{t("withdraw.selectType")}</option>
               <option value="PF ADVANCE (FORM-31)">PF ADVANCE (FORM-31)</option>
             </select>
           </label>
 
           <label>
-            Purpose for which advance is required
+            {t("withdraw.purpose")}
             <select
               value={form.purpose}
               onChange={(event) => updateField("purpose", event.target.value)}
             >
-              <option value="">Select purpose</option>
-              <option value="Illness">Illness</option>
-              <option value="Education">Education</option>
-              <option value="Unemployment">Unemployment</option>
+              <option value="">{t("withdraw.selectPurpose")}</option>
+              <option value="Illness">{t("withdraw.illness")}</option>
+              <option value="Education">{t("withdraw.education")}</option>
+              <option value="Unemployment">{t("withdraw.unemployment")}</option>
             </select>
           </label>
 
           <label>
-            Amount of advance required (in Rs.)
+            {t("withdraw.amount")}
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={form.amount ? money(Number(form.amount)) : ""}
+              value={form.amount ? formatAmount(Number(form.amount)) : ""}
               onChange={(event) =>
                 updateField("amount", event.target.value.replace(/\D/g, ""))
               }
-              placeholder="Enter amount"
+              placeholder={t("withdraw.enterAmount")}
             />
             <small className="eligible-amount">
-              Eligible Claim Amount: Rs {money(eligibleAmount)} (Amount subject
-              to change during processing at EPFO office)
+              {t("withdraw.eligible", { amount: formatAmount(eligibleAmount) })}
             </small>
           </label>
 
           <label>
-            Employee&apos;s address
+            {t("withdraw.address")}
             <textarea
               rows="3"
               value={form.address}
               onChange={(event) => updateField("address", event.target.value)}
-              placeholder="Enter complete address"
+              placeholder={t("withdraw.enterAddress")}
             />
           </label>
 
           <div className="location-fields">
             <label>
-              State
+              {t("withdraw.state")}
               <select
                 value={form.state}
                 onChange={(event) =>
@@ -753,7 +779,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
                   }))
                 }
               >
-                <option value="">Select state</option>
+                <option value="">{t("withdraw.selectState")}</option>
                 {Object.keys(locations).map((state) => (
                   <option key={state} value={state}>
                     {state}
@@ -762,7 +788,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
               </select>
             </label>
             <label>
-              District
+              {t("withdraw.district")}
               <select
                 value={form.district}
                 disabled={!form.state}
@@ -770,7 +796,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
                   updateField("district", event.target.value)
                 }
               >
-                <option value="">Select district</option>
+                <option value="">{t("withdraw.selectDistrict")}</option>
                 {(locations[form.state] || []).map((district) => (
                   <option key={district} value={district}>
                     {district}
@@ -799,6 +825,7 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
 }
 
 function WithdrawalConfirmationModal({ form, onNo, onYes }) {
+  const { t, formatAmount } = useLanguage();
   return (
     <div className="modal-backdrop confirmation-backdrop" role="presentation">
       <section
@@ -811,10 +838,12 @@ function WithdrawalConfirmationModal({ form, onNo, onYes }) {
         <span className="confirmation-icon" aria-hidden>
           ?
         </span>
-        <h2 id="withdrawal-confirmation-title">Submit withdrawal request?</h2>
+        <h2 id="withdrawal-confirmation-title">{t("withdraw.confirmTitle")}</h2>
         <p id="withdrawal-confirmation-description">
-          Do you want to submit your {form.applicationType} claim for Rs{" "}
-          {money(Number(form.amount))}?
+          {t("withdraw.confirm", {
+            type: form.applicationType,
+            amount: formatAmount(Number(form.amount)),
+          })}
         </p>
         <div className="modal-actions confirmation-actions">
           <button className="secondary" onClick={onNo}>
@@ -831,17 +860,20 @@ function WithdrawalConfirmationModal({ form, onNo, onYes }) {
 
 function requestState(request) {
   if (request.status === "rejected" || request.rejectedAt !== undefined) {
-    return { label: "Action required", tone: "rejected", priority: 0 };
+    return { labelKey: "request.action", tone: "rejected", priority: 0 };
   }
   const finalStep =
     request.kind === "withdrawal"
       ? withdrawalSteps.length - 1
       : steps.length - 1;
   if (request.progressStep >= finalStep) {
-    return { label: "Completed", tone: "complete", priority: 2 };
+    return { labelKey: "request.completed", tone: "complete", priority: 2 };
   }
   return {
-    label: request.progressStep === 0 ? "Submitted" : "In progress",
+    labelKey:
+      request.progressStep === 0
+        ? "progress.transfer.submitted"
+        : "request.inProgress",
     tone: "progress",
     priority: 1,
   };
@@ -882,21 +914,28 @@ function initialRequests() {
 }
 
 function RequestSummary({ request, employer, onTrack }) {
+  const { t } = useLanguage();
   const state = requestState(request);
   return (
     <article className={`request-summary ${state.tone}`}>
       <div>
         <small>
-          {request.kind === "transfer" ? "PF transfer" : "PF withdrawal"}
+          {request.kind === "transfer"
+            ? t("request.transfer")
+            : t("request.withdrawal")}
         </small>
         <strong>{employer.company}</strong>
-        <span>Member ID: {employer.memberId}</span>
+        <span>
+          {t("common.memberId")}: {employer.memberId}
+        </span>
       </div>
       <div className="request-summary-status">
-        <span className={`request-status ${state.tone}`}>{state.label}</span>
+        <span className={`request-status ${state.tone}`}>
+          {t(state.labelKey)}
+        </span>
         <time>{request.submittedAt}</time>
         <button className="secondary" type="button" onClick={onTrack}>
-          Track status
+          {t("request.track")}
         </button>
       </div>
     </article>
@@ -904,6 +943,7 @@ function RequestSummary({ request, employer, onTrack }) {
 }
 
 function StatusDetailsModal({ request, employer, onClose }) {
+  const { t } = useLanguage();
   useEffect(() => {
     if (!request) return undefined;
     const closeOnEscape = (event) => {
@@ -930,8 +970,8 @@ function StatusDetailsModal({ request, employer, onClose }) {
       >
         <div className="modal-heading">
           <div>
-            <p className="eyebrow">REQUEST STATUS</p>
-            <h2 id="status-details-title">Status details</h2>
+            <p className="eyebrow">{t("request.statusHeading")}</p>
+            <h2 id="status-details-title">{t("request.statusDetails")}</h2>
             <p>
               {employer.company} · {employer.memberId}
             </p>
@@ -940,7 +980,7 @@ function StatusDetailsModal({ request, employer, onClose }) {
             className="modal-close"
             type="button"
             onClick={onClose}
-            aria-label="Close status details"
+            aria-label={t("request.closeStatus")}
             autoFocus
           >
             ×
@@ -957,6 +997,7 @@ function StatusDetailsModal({ request, employer, onClose }) {
 }
 
 function EmployerCard({ employer, request, onSelect }) {
+  const { t, formatAmount } = useLanguage();
   const state = request ? requestState(request) : null;
   return (
     <article className="employer employer-compact">
@@ -971,14 +1012,22 @@ function EmployerCard({ employer, request, onSelect }) {
             <strong>{employer.company}</strong>
             <small className="employment-dates">{employer.dates}</small>
             <small className="row-service">
-              Total service: {serviceDuration(employer.serviceMonths)}
+              {t("employment.totalService", {
+                duration: serviceDuration(
+                  employer.serviceMonths,
+                  t,
+                  formatAmount,
+                ),
+              })}
             </small>
           </span>
         </span>
         <span className="employer-balance">
-          <small>Total PF balance</small>
-          <strong>{money(employer.balance)}</strong>
-          <small className="member">Member ID: {employer.memberId}</small>
+          <small>{t("employment.totalBalance")}</small>
+          <strong>{formatAmount(employer.balance)}</strong>
+          <small className="member">
+            {t("common.memberId")}: {employer.memberId}
+          </small>
         </span>
         <span className="employer-card-end">
           {state && (
@@ -987,7 +1036,7 @@ function EmployerCard({ employer, request, onSelect }) {
             </span>
           )}
           <span className="view-employment">
-            View employment <span aria-hidden>→</span>
+            {t("employment.view")} <span aria-hidden>→</span>
           </span>
         </span>
       </button>
@@ -996,6 +1045,7 @@ function EmployerCard({ employer, request, onSelect }) {
 }
 
 function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
+  const { t, formatAmount } = useLanguage();
   const combinedBalance = employers.reduce(
     (sum, employer) => sum + employer.balance,
     0,
@@ -1022,23 +1072,24 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
       <main id="dashboard">
         <div className="welcome">
           <div>
-            <p className="eyebrow">MEMBER HOME</p>
-            <h1>Good morning, Ananya.</h1>
-            <p>
-              Start with your balance, then choose an employment when you need
-              more detail.
-            </p>
+            <p className="eyebrow">{t("dashboard.eyebrow")}</p>
+            <h1>{t("dashboard.greeting")}</h1>
+            <p>{t("dashboard.intro")}</p>
           </div>
         </div>
         <section
           className="member-overview overview-simple"
-          aria-label="Member overview"
+          aria-label={t("dashboard.overview")}
         >
           <div className="total balance-primary">
-            <small>Combined PF balance</small>
-            <strong>{money(combinedBalance)}</strong>
-            <span>Total service · {serviceDuration(totalServiceMonths)}</span>
-            <small>UAN ending •••• {uan.slice(-4)}</small>
+            <small>{t("dashboard.combined")}</small>
+            <strong>{formatAmount(combinedBalance)}</strong>
+            <span>
+              {t("dashboard.totalService", {
+                duration: serviceDuration(totalServiceMonths, t, formatAmount),
+              })}
+            </span>
+            <small>{t("dashboard.uanEnding", { suffix: uan.slice(-4) })}</small>
           </div>
         </section>
 
@@ -1048,12 +1099,9 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
             aria-labelledby="things-to-do-title"
           >
             <div>
-              <p className="eyebrow">THINGS TO DO</p>
-              <h2 id="things-to-do-title">A transfer needs your attention</h2>
-              <p>
-                Review the field office response before submitting the transfer
-                again.
-              </p>
+              <p className="eyebrow">{t("dashboard.todo")}</p>
+              <h2 id="things-to-do-title">{t("dashboard.attention")}</h2>
+              <p>{t("dashboard.attentionHelp")}</p>
             </div>
             <button
               className="primary"
@@ -1070,10 +1118,14 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
         <section className="accounts">
           <div className="accounts-title">
             <div>
-              <h2>Your employments</h2>
-              <p>Most recent employment first</p>
+              <h2>{t("dashboard.employments")}</h2>
+              <p>{t("dashboard.recentFirst")}</p>
             </div>
-            <span>{employers.length} accounts</span>
+            <span>
+              {t("dashboard.accounts", {
+                count: formatAmount(employers.length),
+              })}
+            </span>
           </div>
           {employers.map((employer) => (
             <EmployerCard
@@ -1094,15 +1146,17 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
           >
             <div className="section-heading">
               <div>
-                <h2 id="recent-requests-title">Recent requests</h2>
-                <p>Your latest claim activity</p>
+                <h2 id="recent-requests-title">
+                  {t("dashboard.recentRequests")}
+                </h2>
+                <p>{t("dashboard.latest")}</p>
               </div>
               <button
                 className="link-button"
                 type="button"
                 onClick={() => onNavigate("requests")}
               >
-                View all requests
+                {t("dashboard.viewAll")}
               </button>
             </div>
             {latestRequests.map((request) => (
@@ -1127,8 +1181,8 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
         >
           <span>▤</span>
           <span>
-            <strong>View complete passbook</strong>
-            <small>All contributions and transactions in one place</small>
+            <strong>{t("dashboard.passbook")}</strong>
+            <small>{t("dashboard.passbookHelp")}</small>
           </span>
           <b>→</b>
         </button>
@@ -1145,6 +1199,7 @@ function EmploymentDetails({
   onPassbook,
   onSubmitRequest,
 }) {
+  const { t, formatAmount, formatDate } = useLanguage();
   const [transferEmployer, setTransferEmployer] = useState(null);
   const [targetEmployer, setTargetEmployer] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -1227,37 +1282,47 @@ function EmploymentDetails({
           type="button"
           onClick={() => onNavigate("dashboard")}
         >
-          <span aria-hidden>←</span> Back to employments
+          <span aria-hidden>←</span> {t("common.backEmployments")}
         </button>
         <section className="employment-hero">
           <span className="avatar">{employer.company[0]}</span>
           <div>
-            <p className="eyebrow">EMPLOYMENT</p>
+            <p className="eyebrow">{t("employment.heading")}</p>
             <h1>{employer.company}</h1>
             <p>{employer.dates}</p>
-            <strong>Member ID: {employer.memberId}</strong>
+            <strong>
+              {t("common.memberId")}: {employer.memberId}
+            </strong>
           </div>
           <div className="employment-hero-balance">
-            <small>Total PF balance</small>
-            <strong>{money(employer.balance)}</strong>
-            <span>{serviceDuration(employer.serviceMonths)} service</span>
+            <small>{t("employment.totalBalance")}</small>
+            <strong>{formatAmount(employer.balance)}</strong>
+            <span>
+              {t("employment.service", {
+                duration: serviceDuration(
+                  employer.serviceMonths,
+                  t,
+                  formatAmount,
+                ),
+              })}
+            </span>
           </div>
         </section>
         <section className="employment-contributions">
           <div className="section-heading">
             <div>
-              <h2>Recent contributions</h2>
-              <p>Last 3 credited months</p>
+              <h2>{t("employment.recent")}</h2>
+              <p>{t("employment.lastThree")}</p>
             </div>
             <button
               className="contribution-passbook"
               type="button"
               onClick={() => onPassbook(employer, false)}
-              aria-label="View complete passbook"
+              aria-label={t("dashboard.passbook")}
             >
               <span aria-hidden>▤</span>
               <span className="contribution-passbook-label">
-                View complete passbook
+                {t("dashboard.passbook")}
               </span>
             </button>
           </div>
@@ -1265,19 +1330,21 @@ function EmploymentDetails({
             <table>
               <thead>
                 <tr>
-                  <th>Transaction date</th>
-                  <th>Employee share (12%)</th>
-                  <th>Employer share (3.67%)</th>
-                  <th>Pension share (8.33%)</th>
+                  <th>{t("table.transactionDate")}</th>
+                  <th>{t("table.employeeShare")}</th>
+                  <th>{t("table.employerShare")}</th>
+                  <th>{t("table.pensionShare")}</th>
                 </tr>
               </thead>
               <tbody>
                 {employer.contributions.map((contribution) => (
                   <tr key={contribution.date}>
-                    <th scope="row">{contribution.date}</th>
-                    <td>{money(contribution.employee)}</td>
-                    <td>{money(contribution.employer)}</td>
-                    <td>{money(contribution.pension)}</td>
+                    <th scope="row">
+                      {formatDate(parseEnglishDate(contribution.date))}
+                    </th>
+                    <td>{formatAmount(contribution.employee)}</td>
+                    <td>{formatAmount(contribution.employer)}</td>
+                    <td>{formatAmount(contribution.pension)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1288,8 +1355,8 @@ function EmploymentDetails({
           <section className="employment-requests">
             <div className="section-heading">
               <div>
-                <h2>Requests</h2>
-                <p>Activity for this employment</p>
+                <h2>{t("common.requests")}</h2>
+                <p>{t("employment.activity")}</p>
               </div>
             </div>
             {employerRequests.map((request) => (
@@ -1306,9 +1373,9 @@ function EmploymentDetails({
         )}
         <section className="manage-funds" aria-labelledby="manage-funds-title">
           <div>
-            <p className="eyebrow">SERVICES</p>
-            <h2 id="manage-funds-title">Manage funds</h2>
-            <p>Choose a service when you are ready to make a request.</p>
+            <p className="eyebrow">{t("employment.services")}</p>
+            <h2 id="manage-funds-title">{t("employment.manage")}</h2>
+            <p>{t("employment.chooseService")}</p>
           </div>
           <div className="manage-funds-actions">
             <button
@@ -1318,10 +1385,10 @@ function EmploymentDetails({
               onClick={() => setTransferEmployer(employer)}
             >
               {transferCanBeRetried
-                ? "Retry transfer"
+                ? t("employment.retry")
                 : transferRequest
-                  ? "Transfer already requested"
-                  : "Transfer Amount"}
+                  ? t("employment.transferExisting")
+                  : t("employment.transfer")}
             </button>
             <button
               className="primary"
@@ -1333,8 +1400,8 @@ function EmploymentDetails({
               }}
             >
               {withdrawalRequest
-                ? "Withdrawal already requested"
-                : "Withdraw Amount"}
+                ? t("employment.withdrawExisting")
+                : t("employment.withdraw")}
             </button>
           </div>
         </section>
@@ -1377,6 +1444,7 @@ function EmploymentDetails({
 }
 
 function Requests({ requests, selectedRequestId, onLogout, onNavigate }) {
+  const { t } = useLanguage();
   const orderedRequests = sortRequests(requests);
   const selectedRequest = requests.find(
     (request) => request.id === selectedRequestId,
@@ -1393,14 +1461,11 @@ function Requests({ requests, selectedRequestId, onLogout, onNavigate }) {
       />
       <main className="requests-page">
         <div className="page-heading">
-          <p className="eyebrow">REQUESTS</p>
-          <h1>Track your requests</h1>
-          <p>
-            Transfers and withdrawals are kept together, with items needing
-            attention shown first.
-          </p>
+          <p className="eyebrow">{t("request.heading")}</p>
+          <h1>{t("request.title")}</h1>
+          <p>{t("request.intro")}</p>
         </div>
-        <section className="requests-list" aria-label="Your requests">
+        <section className="requests-list" aria-label={t("request.list")}>
           {orderedRequests.length ? (
             orderedRequests.map((request) => (
               <RequestSummary
@@ -1416,8 +1481,8 @@ function Requests({ requests, selectedRequestId, onLogout, onNavigate }) {
             ))
           ) : (
             <div className="empty-state">
-              <h2>No requests yet</h2>
-              <p>Your transfer and withdrawal requests will appear here.</p>
+              <h2>{t("request.empty")}</h2>
+              <p>{t("request.emptyHelp")}</p>
             </div>
           )}
         </section>
@@ -1432,7 +1497,13 @@ function Requests({ requests, selectedRequestId, onLogout, onNavigate }) {
 }
 
 function ProfilePage({ onLogout, onNavigate }) {
-  const services = ["KYC", "Change phone number", "E-Nomination", "UAN Card"];
+  const { t } = useLanguage();
+  const services = [
+    "profile.kyc",
+    "profile.changePhone",
+    "profile.nomination",
+    "profile.uanCard",
+  ];
   return (
     <>
       <Header
@@ -1442,17 +1513,17 @@ function ProfilePage({ onLogout, onNavigate }) {
       />
       <main className="profile-page">
         <div className="page-heading">
-          <p className="eyebrow">PROFILE</p>
+          <p className="eyebrow">{t("profile.heading")}</p>
           <h1>{memberName}</h1>
-          <p>Your member identity and account services.</p>
+          <p>{t("profile.description")}</p>
         </div>
         <section className="profile-identity">
           <span className="avatar">AK</span>
           <div>
-            <small>Universal Account Number (UAN)</small>
+            <small>{t("profile.uanFull")}</small>
             <strong>{uan}</strong>
             <span className="verified-pill">
-              <span aria-hidden>✓</span> Verified
+              <span aria-hidden>✓</span> {t("common.verified")}
             </span>
           </div>
         </section>
@@ -1460,11 +1531,11 @@ function ProfilePage({ onLogout, onNavigate }) {
           className="profile-services"
           aria-labelledby="profile-services-title"
         >
-          <h2 id="profile-services-title">Member services</h2>
+          <h2 id="profile-services-title">{t("profile.services")}</h2>
           {services.map((service) => (
             <div className="profile-service" key={service}>
-              <strong>{service}</strong>
-              <span>Coming soon</span>
+              <strong>{t(service)}</strong>
+              <span>{t("common.comingSoon")}</span>
             </div>
           ))}
         </section>
@@ -1480,7 +1551,7 @@ function Passbook({
   onLogout,
   onNavigate,
 }) {
-  const { t, formatAmount } = useLanguage();
+  const { t, formatAmount, formatDate } = useLanguage();
   const [financialYear, setFinancialYear] = useState(financialYears[0]);
   const [selectedEmployer, setSelectedEmployer] = useState(employer);
   const entries = buildPassbookEntries(selectedEmployer, financialYear);
@@ -1510,20 +1581,18 @@ function Passbook({
       />
       <main className="passbook-page">
         <button className="passbook-back" onClick={onBack}>
-          <span aria-hidden>←</span> Back to employments
+          <span aria-hidden>←</span> {t("common.backEmployments")}
         </button>
 
         <div className="passbook-heading">
           <div>
-            <p className="eyebrow">COMPLETE PASSBOOK</p>
-            <h1>PF contributions</h1>
-            <p>
-              Review monthly deposits and annual totals for this employment.
-            </p>
+            <p className="eyebrow">{t("passbook.heading")}</p>
+            <h1>{t("passbook.title")}</h1>
+            <p>{t("passbook.intro")}</p>
           </div>
           <div className="passbook-controls">
             <label className="year-selector">
-              <span>Financial year</span>
+              <span>{t("common.financialYear")}</span>
               <select
                 value={financialYear}
                 onChange={(event) =>
@@ -1532,7 +1601,7 @@ function Passbook({
               >
                 {financialYears.map((year) => (
                   <option key={year} value={year}>
-                    FY {financialYearLabel(year)}
+                    {t("passbook.fy", { year: financialYearLabel(year) })}
                   </option>
                 ))}
               </select>
@@ -1550,21 +1619,26 @@ function Passbook({
                 )
               }
             >
-              <span aria-hidden>↓</span> Download CSV
+              <span aria-hidden>↓</span> {t("common.downloadCsv")}
             </button>
           </div>
         </div>
 
-        <section className="passbook-employer" aria-label="Selected employer">
+        <section
+          className="passbook-employer"
+          aria-label={t("common.selectedEmployer")}
+        >
           <span className="avatar">{selectedEmployer.company[0]}</span>
           <div className="passbook-employer-details">
-            <small>Selected employer</small>
+            <small>{t("common.selectedEmployer")}</small>
             <strong>{selectedEmployer.company}</strong>
-            <span>Member ID: {selectedEmployer.memberId}</span>
+            <span>
+              {t("common.memberId")}: {selectedEmployer.memberId}
+            </span>
           </div>
           {allowEmployerSelection && (
             <label className="employer-selector">
-              <span>Choose employer</span>
+              <span>{t("common.chooseEmployer")}</span>
               <select
                 value={selectedEmployer.id}
                 onChange={(event) =>
@@ -1590,30 +1664,39 @@ function Passbook({
           <div className="annual-table-heading">
             <div>
               <h2 id="annual-table-title">
-                Financial year {financialYearLabel(financialYear)}
+                {t("passbook.year", {
+                  year: financialYearLabel(financialYear),
+                })}
               </h2>
-              <p>12 contributions from April to March</p>
+              <p>{t("passbook.count")}</p>
             </div>
-            <span className="entry-count">12 entries</span>
+            <span className="entry-count">
+              {t("passbook.entries", { count: formatAmount(12) })}
+            </span>
           </div>
           <div className="passbook-table-wrap">
             <table className="passbook-table">
               <thead>
                 <tr>
-                  <th scope="col">Wage month</th>
-                  <th scope="col">Transaction date</th>
-                  <th scope="col">EPF wages</th>
-                  <th scope="col">EPS wages</th>
-                  <th scope="col">Employee share (12%)</th>
-                  <th scope="col">Employer share (3.67%)</th>
-                  <th scope="col">Pension share (8.33%)</th>
+                  <th scope="col">{t("table.wageMonth")}</th>
+                  <th scope="col">{t("table.transactionDate")}</th>
+                  <th scope="col">{t("table.epfWages")}</th>
+                  <th scope="col">{t("table.epsWages")}</th>
+                  <th scope="col">{t("table.employeeShare")}</th>
+                  <th scope="col">{t("table.employerShare")}</th>
+                  <th scope="col">{t("table.pensionShare")}</th>
                 </tr>
               </thead>
               <tbody>
                 {entries.map((entry) => (
                   <tr key={entry.wageMonth}>
-                    <th scope="row">{entry.wageMonth}</th>
-                    <td>{entry.transactionDate}</td>
+                    <th scope="row">
+                      {formatDate(entry.wageDate, {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </th>
+                    <td>{formatDate(entry.transactionDate)}</td>
                     <td>{formatAmount(entry.epfWages)}</td>
                     <td>{formatAmount(entry.epsWages)}</td>
                     <td>{formatAmount(entry.employeeShare)}</td>
@@ -1625,8 +1708,9 @@ function Passbook({
               <tfoot>
                 <tr>
                   <th colSpan="2" scope="row">
-                    Total Contributions for the year (
-                    {financialYearLabel(financialYear)})
+                    {t("passbook.total", {
+                      year: financialYearLabel(financialYear),
+                    })}
                   </th>
                   <td>{formatAmount(totals.epfWages)}</td>
                   <td>{formatAmount(totals.epsWages)}</td>
@@ -1643,6 +1727,7 @@ function Passbook({
   );
 }
 function Login({ onVerify }) {
+  const { t, formatAmount } = useLanguage();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(false);
   const [code, setCode] = useState("");
@@ -1661,7 +1746,7 @@ function Login({ onVerify }) {
   const sendCode = () => {
     setOtp(true);
     setCode("");
-    setMessage("A new verification code has been sent.");
+    setMessage("login.resent");
     setResendSeconds(30);
   };
   const submit = (e) => {
@@ -1671,7 +1756,7 @@ function Login({ onVerify }) {
       return;
     }
     if (code.length !== 6) {
-      setMessage("Enter the complete six-digit verification code.");
+      setMessage("login.incomplete");
       return;
     }
     onVerify();
@@ -1684,30 +1769,21 @@ function Login({ onVerify }) {
           <span>e</span> EPFO <b>one</b>
         </a>
         <div>
-          <p className="eyebrow">THE MEMBER EXPERIENCE</p>
-          <h1>Your PF, simply understood.</h1>
-          <p>
-            Keep an eye on balances, contributions and claims—without the
-            paperwork.
-          </p>
+          <p className="eyebrow">{t("login.experience")}</p>
+          <h1>{t("login.hero")}</h1>
+          <p>{t("login.heroHelp")}</p>
         </div>
-        <div className="security">
-          ⌁ &nbsp; Your information is protected and private.
-        </div>
+        <div className="security">⌁ &nbsp; {t("login.security")}</div>
       </div>
       <section className="login-card">
         <LanguageSelector className="login-language-selector" />
-        <p className="eyebrow">MEMBER SIGN IN</p>
-        <h2>{otp ? "Enter verification code" : "Welcome back"}</h2>
-        <p>
-          {otp
-            ? `We sent a 6-digit code to +91 ${phone}.`
-            : "Use your registered mobile number to continue."}
-        </p>
+        <p className="eyebrow">{t("login.eyebrow")}</p>
+        <h2>{otp ? t("login.codeTitle") : t("login.welcome")}</h2>
+        <p>{otp ? t("login.sent", { phone }) : t("login.instructions")}</p>
         <form onSubmit={submit}>
           {otp ? (
             <label>
-              One-time password
+              {t("login.otp")}
               <input
                 autoFocus
                 inputMode="numeric"
@@ -1720,7 +1796,7 @@ function Login({ onVerify }) {
             </label>
           ) : (
             <label>
-              Mobile number
+              {t("login.mobile")}
               <div className="phone">
                 <span>+91</span>
                 <input
@@ -1730,7 +1806,7 @@ function Login({ onVerify }) {
                   maxLength="10"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  placeholder="10-digit mobile number"
+                  placeholder={t("login.mobilePlaceholder")}
                   required
                 />
               </div>
@@ -1741,12 +1817,12 @@ function Login({ onVerify }) {
             type="submit"
             disabled={otp ? code.length !== 6 : phone.length !== 10}
           >
-            {otp ? "Verify & continue" : "Send OTP"} <span>→</span>
+            {otp ? t("login.verify") : t("login.sendOtp")} <span>→</span>
           </button>
         </form>
         {message && (
           <p className="login-message" role="status" aria-live="polite">
-            {message}
+            {t(message)}
           </p>
         )}
         {otp && (
@@ -1758,8 +1834,8 @@ function Login({ onVerify }) {
               onClick={sendCode}
             >
               {resendSeconds > 0
-                ? `Resend code in ${resendSeconds}s`
-                : "Resend code"}
+                ? t("login.resendIn", { count: formatAmount(resendSeconds) })
+                : t("login.resend")}
             </button>
             <button
               className="link-button"
@@ -1771,14 +1847,11 @@ function Login({ onVerify }) {
                 setResendSeconds(0);
               }}
             >
-              Change mobile number
+              {t("login.changeMobile")}
             </button>
           </div>
         )}
-        <small className="terms">
-          By continuing, you agree to use this service only for your own EPFO
-          account.
-        </small>
+        <small className="terms">{t("login.terms")}</small>
       </section>
     </main>
   );
@@ -1787,28 +1860,23 @@ function Login({ onVerify }) {
 const chatAnswers = [
   {
     keywords: ["balance", "total pf"],
-    response:
-      "Your combined PF balance is shown at the top of the member dashboard. Open an employment to review its individual balance and contributions.",
+    response: "chat.answerBalance",
   },
   {
     keywords: ["transfer", "claim"],
-    response:
-      "To transfer PF funds, open the previous employment, go to Manage funds, and select Transfer Amount. Track the submitted request from Requests.",
+    response: "chat.answerTransfer",
   },
   {
     keywords: ["withdraw", "advance", "form-31"],
-    response:
-      "Open an employment, go to Manage funds, and choose Withdraw Amount. After confirmation, track the request from Requests.",
+    response: "chat.answerWithdrawal",
   },
   {
     keywords: ["passbook", "contribution"],
-    response:
-      "Select View complete passbook to review monthly EPF and EPS wages, employee and employer shares, pension contributions, and financial-year totals.",
+    response: "chat.answerPassbook",
   },
   {
     keywords: ["uan", "universal account"],
-    response:
-      "Your complete Universal Account Number is available in Profile. A masked UAN appears on Home, and the same UAN links your employment member IDs.",
+    response: "chat.answerUan",
   },
 ];
 
@@ -1817,19 +1885,17 @@ function getChatResponse(question) {
   const answer = chatAnswers.find(({ keywords }) =>
     keywords.some((keyword) => normalizedQuestion.includes(keyword)),
   );
-  return (
-    answer?.response ||
-    "I can help with PF balances, contributions, passbooks, transfer claims, withdrawal requests, and UAN details. Try asking about one of these topics."
-  );
+  return answer?.response || "chat.fallback";
 }
 
 function ChatAssistant() {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([
     {
       sender: "assistant",
-      text: "Hi! I’m the EPFO One assistant. How can I help you today?",
+      text: "chat.greeting",
     },
   ]);
 
@@ -1847,22 +1913,25 @@ function ChatAssistant() {
   };
 
   return (
-    <aside className="chat-assistant" aria-label="EPFO One chat assistant">
+    <aside className="chat-assistant" aria-label={t("chat.aria")}>
       {isOpen && (
-        <section className="chat-window" aria-label="Chat window">
+        <section className="chat-window" aria-label={t("chat.window")}>
           <div className="chat-header">
             <div>
               <span className="chat-avatar" aria-hidden>
                 e
               </span>
               <div>
-                <strong>EPFO One assistant</strong>
+                <strong>{t("chat.assistant")}</strong>
                 <small>
-                  <span aria-hidden /> Online · MVP answers
+                  <span aria-hidden /> {t("chat.online")}
                 </small>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} aria-label="Close chat">
+            <button
+              onClick={() => setIsOpen(false)}
+              aria-label={t("chat.close")}
+            >
               ×
             </button>
           </div>
@@ -1873,33 +1942,33 @@ function ChatAssistant() {
                 className={`chat-message ${message.sender}`}
                 key={`${message.sender}-${index}`}
               >
-                {message.text}
+                {message.sender === "assistant"
+                  ? t(message.text)
+                  : message.text}
               </div>
             ))}
           </div>
 
           <form className="chat-form" onSubmit={submitQuestion}>
             <label className="sr-only" htmlFor="chat-question">
-              Ask a question
+              {t("chat.ask")}
             </label>
             <input
               id="chat-question"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              placeholder="Ask about your PF account…"
+              placeholder={t("chat.placeholder")}
               autoComplete="off"
             />
             <button
               type="submit"
               disabled={!question.trim()}
-              aria-label="Send question"
+              aria-label={t("chat.send")}
             >
               <span aria-hidden>➤</span>
             </button>
           </form>
-          <small className="chat-disclaimer">
-            Mock assistant · Responses are for demonstration only.
-          </small>
+          <small className="chat-disclaimer">{t("chat.disclaimer")}</small>
         </section>
       )}
 
@@ -1907,10 +1976,10 @@ function ChatAssistant() {
         className="chat-bubble"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        aria-label={isOpen ? "Close EPFO assistant" : "Open EPFO assistant"}
+        aria-label={isOpen ? t("chat.closeAssistant") : t("chat.open")}
       >
         <span aria-hidden>{isOpen ? "×" : "✦"}</span>
-        {!isOpen && <small>Ask EPFO One</small>}
+        {!isOpen && <small>{t("chat.bubble")}</small>}
       </button>
     </aside>
   );
