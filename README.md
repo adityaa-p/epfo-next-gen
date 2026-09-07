@@ -62,3 +62,16 @@ The included GitHub Actions workflow deploys the production build whenever a cha
 3. Push to `main`, then open the **Deploy to GitHub Pages** workflow to monitor the deployment.
 
 The workflow runs formatting, linting, tests, and the production build before uploading `dist` to GitHub Pages. For a custom domain or root-domain site, set the workflow's `BASE_PATH` build environment variable to `/`.
+
+## Localization
+
+EPFO One supports English (`en`), Hindi (`hi`), Marathi (`mr`), Kannada (`kn`), and Tamil (`ta`). The language control is available before and after sign-in. A selection is stored in the browser under `epfo-one-language`, so it survives navigation, refreshes, and sign-out; the browser language is used on a first visit.
+
+Application copy uses stable, namespaced keys in `src/i18n/translations.js`. `src/i18n/LanguageProvider.jsx` owns language detection, English fallback, interpolation, and locale-aware number/date helpers. CSV column labels and totals are sourced from the same catalogue so exports can follow the active UI language.
+
+To add a locale:
+
+1. Add its locale code and native name to `languageNames`.
+2. Add a dictionary containing exactly the same keys as `en` in `translations.js` (preserve the order of the transfer and withdrawal progress keys).
+3. Add the matching BCP 47 locale tag to `localeTags` in `LanguageProvider.jsx`.
+4. Run `npm run format`, `npm run lint`, `npm test`, and `npm run build`, then check the login and authenticated layouts at 320, 375, 768, and desktop widths.

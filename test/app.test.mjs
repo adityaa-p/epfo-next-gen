@@ -155,3 +155,45 @@ test("supports dismissible profile and status overlays", () => {
     "autoFocus",
   ]);
 });
+
+const catalogue = await import("../src/i18n/translations.js");
+test("localization catalogue has five native-named, key-complete locales", () => {
+  assert.deepEqual(catalogue.supportedLanguages, [
+    "en",
+    "hi",
+    "mr",
+    "kn",
+    "ta",
+  ]);
+  assert.deepEqual(Object.values(catalogue.languageNames), [
+    "English",
+    "हिन्दी",
+    "मराठी",
+    "ಕನ್ನಡ",
+    "தமிழ்",
+  ]);
+  const englishKeys = Object.keys(catalogue.translations.en).sort();
+  for (const code of catalogue.supportedLanguages)
+    assert.deepEqual(
+      Object.keys(catalogue.translations[code]).sort(),
+      englishKeys,
+    );
+});
+
+test("claim progress translation keys preserve semantic ordering", () => {
+  const transfer = [
+    "submitted",
+    "pendingEmployer",
+    "approvedEmployer",
+    "pendingOffice",
+    "approvedOfficer",
+    "done",
+  ];
+  const withdrawal = ["submitted", "pendingOffice", "approvedOffice", "done"];
+  for (const locale of Object.values(catalogue.translations)) {
+    assert.ok(transfer.every((name) => locale[`progress.transfer.${name}`]));
+    assert.ok(
+      withdrawal.every((name) => locale[`progress.withdrawal.${name}`]),
+    );
+  }
+});

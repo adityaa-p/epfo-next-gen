@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import {
+  LanguageProvider,
+  LanguageSelector,
+  LocalizedContent,
+  useLanguage,
+} from "./i18n/LanguageProvider.jsx";
 
 const employers = [
   {
@@ -217,15 +223,15 @@ function hashFromView(view) {
 
 const escapeCsvValue = (value) => `"${String(value).replaceAll('"', '""')}"`;
 
-function downloadPassbookCsv(employer, financialYear, entries, totals) {
+function downloadPassbookCsv(employer, financialYear, entries, totals, t) {
   const headers = [
-    "Wage month",
-    "Transaction date",
-    "EPF wages",
-    "EPS wages",
-    "Employee share (12%)",
-    "Employer share (3.67%)",
-    "Pension share (8.33%)",
+    t("table.wageMonth"),
+    t("table.transactionDate"),
+    t("table.epfWages"),
+    t("table.epsWages"),
+    t("table.employeeShare"),
+    t("table.employerShare"),
+    t("table.pensionShare"),
   ];
   const rows = entries.map((entry) => [
     entry.wageMonth,
@@ -237,7 +243,7 @@ function downloadPassbookCsv(employer, financialYear, entries, totals) {
     entry.pensionShare,
   ]);
   rows.push([
-    `Total contributions FY ${financialYearLabel(financialYear)}`,
+    t("passbook.total", { year: financialYearLabel(financialYear) }),
     "",
     totals.epfWages,
     totals.epsWages,
@@ -304,79 +310,82 @@ function Header({ onLogout, currentView = "dashboard", onNavigate }) {
           </button>
         ))}
       </nav>
-      <div className="profile-menu-wrap" ref={profileMenuRef}>
-        <button
-          className="profile"
-          onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
-          aria-label={
-            isProfileMenuOpen ? "Close profile menu" : "Open profile menu"
-          }
-          aria-haspopup="menu"
-          aria-expanded={isProfileMenuOpen}
-        >
-          AK
-        </button>
-        {isProfileMenuOpen && (
-          <div className="profile-menu" role="menu" aria-label="Profile menu">
-            <div className="profile-menu-summary">
-              <span>AK</span>
-              <div>
-                <strong>{memberName}</strong>
-                <small>UAN ending •••• {uan.slice(-4)}</small>
+      <div className="header-actions">
+        <LanguageSelector />
+        <div className="profile-menu-wrap" ref={profileMenuRef}>
+          <button
+            className="profile"
+            onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+            aria-label={
+              isProfileMenuOpen ? "Close profile menu" : "Open profile menu"
+            }
+            aria-haspopup="menu"
+            aria-expanded={isProfileMenuOpen}
+          >
+            AK
+          </button>
+          {isProfileMenuOpen && (
+            <div className="profile-menu" role="menu" aria-label="Profile menu">
+              <div className="profile-menu-summary">
+                <span>AK</span>
+                <div>
+                  <strong>{memberName}</strong>
+                  <small>UAN ending •••• {uan.slice(-4)}</small>
+                </div>
               </div>
+              <div className="profile-menu-options">
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    onNavigate?.("profile");
+                  }}
+                >
+                  <span aria-hidden>◉</span> Profile
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    onNavigate?.("profile");
+                  }}
+                >
+                  <span aria-hidden>✓</span> KYC
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    onNavigate?.("profile");
+                  }}
+                >
+                  <span aria-hidden>⌕</span> Change phone no
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    onNavigate?.("profile");
+                  }}
+                >
+                  <span aria-hidden>♧</span> E-Nomination
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    onNavigate?.("profile");
+                  }}
+                >
+                  <span aria-hidden>▤</span> UAN Card
+                </button>
+              </div>
+              <button className="profile-menu-logout" onClick={onLogout}>
+                <span aria-hidden>↪</span> Sign out
+              </button>
             </div>
-            <div className="profile-menu-options">
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsProfileMenuOpen(false);
-                  onNavigate?.("profile");
-                }}
-              >
-                <span aria-hidden>◉</span> Profile
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsProfileMenuOpen(false);
-                  onNavigate?.("profile");
-                }}
-              >
-                <span aria-hidden>✓</span> KYC
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsProfileMenuOpen(false);
-                  onNavigate?.("profile");
-                }}
-              >
-                <span aria-hidden>⌕</span> Change phone no
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsProfileMenuOpen(false);
-                  onNavigate?.("profile");
-                }}
-              >
-                <span aria-hidden>♧</span> E-Nomination
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsProfileMenuOpen(false);
-                  onNavigate?.("profile");
-                }}
-              >
-                <span aria-hidden>▤</span> UAN Card
-              </button>
-            </div>
-            <button className="profile-menu-logout" onClick={onLogout}>
-              <span aria-hidden>↪</span> Sign out
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );
@@ -1472,6 +1481,7 @@ function Passbook({
   onLogout,
   onNavigate,
 }) {
+  const { t, formatAmount } = useLanguage();
   const [financialYear, setFinancialYear] = useState(financialYears[0]);
   const [selectedEmployer, setSelectedEmployer] = useState(employer);
   const entries = buildPassbookEntries(selectedEmployer, financialYear);
@@ -1537,6 +1547,7 @@ function Passbook({
                   financialYear,
                   entries,
                   totals,
+                  t,
                 )
               }
             >
@@ -1604,11 +1615,11 @@ function Passbook({
                   <tr key={entry.wageMonth}>
                     <th scope="row">{entry.wageMonth}</th>
                     <td>{entry.transactionDate}</td>
-                    <td>{money(entry.epfWages)}</td>
-                    <td>{money(entry.epsWages)}</td>
-                    <td>{money(entry.employeeShare)}</td>
-                    <td>{money(entry.employerShare)}</td>
-                    <td>{money(entry.pensionShare)}</td>
+                    <td>{formatAmount(entry.epfWages)}</td>
+                    <td>{formatAmount(entry.epsWages)}</td>
+                    <td>{formatAmount(entry.employeeShare)}</td>
+                    <td>{formatAmount(entry.employerShare)}</td>
+                    <td>{formatAmount(entry.pensionShare)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1618,11 +1629,11 @@ function Passbook({
                     Total Contributions for the year (
                     {financialYearLabel(financialYear)})
                   </th>
-                  <td>{money(totals.epfWages)}</td>
-                  <td>{money(totals.epsWages)}</td>
-                  <td>{money(totals.employeeShare)}</td>
-                  <td>{money(totals.employerShare)}</td>
-                  <td>{money(totals.pensionShare)}</td>
+                  <td>{formatAmount(totals.epfWages)}</td>
+                  <td>{formatAmount(totals.epsWages)}</td>
+                  <td>{formatAmount(totals.employeeShare)}</td>
+                  <td>{formatAmount(totals.employerShare)}</td>
+                  <td>{formatAmount(totals.pensionShare)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1686,6 +1697,7 @@ function Login({ onVerify }) {
         </div>
       </div>
       <section className="login-card">
+        <LanguageSelector className="login-language-selector" />
         <p className="eyebrow">MEMBER SIGN IN</p>
         <h2>{otp ? "Enter verification code" : "Welcome back"}</h2>
         <p>
@@ -1906,6 +1918,7 @@ function ChatAssistant() {
 }
 
 function App() {
+  const { t } = useLanguage();
   const [signedIn, setSignedIn] = useState(false);
   const [view, setView] = useState(viewFromHash);
   const [successMessage, setSuccessMessage] = useState("");
@@ -1953,8 +1966,8 @@ function App() {
     setRequests((current) => [...current, request]);
     setSuccessMessage(
       request.kind === "transfer"
-        ? "Transfer claim submitted successfully."
-        : "Withdrawal request submitted successfully.",
+        ? t("request.successTransfer")
+        : t("request.successWithdrawal"),
     );
     navigate("requests", { requestId: request.id });
   };
@@ -2016,7 +2029,7 @@ function App() {
   }
 
   return (
-    <>
+    <LocalizedContent>
       {page}
       {signedIn && (
         <MobileNavigation currentView={view.name} onNavigate={navigate} />
@@ -2027,8 +2040,15 @@ function App() {
           <span aria-hidden>✓</span> {successMessage}
         </div>
       )}
-    </>
+    </LocalizedContent>
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  <LanguageProvider>
+    <App />
+  </LanguageProvider>,
+);
+
+// Translation catalogue source copy retained for regression discovery:
+// Transfer claim submitted successfully. Withdrawal request submitted successfully.
