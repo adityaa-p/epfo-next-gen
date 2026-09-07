@@ -11,7 +11,8 @@ const employers = [
   {
     id: "u112",
     company: "Northstar Technologies Pvt. Ltd.",
-    dates: "01 January 2022 — Present",
+    startDate: "2022-01-01",
+    endDate: null,
     memberId: "KN/BN/0004821/014",
     balance: 184260,
     serviceMonths: 56,
@@ -25,7 +26,8 @@ const employers = [
   {
     id: "u088",
     company: "Aster Cloud Services",
-    dates: "01 April 2019 — 31 December 2021",
+    startDate: "2019-04-01",
+    endDate: "2021-12-31",
     memberId: "KN/BN/0004821/009",
     balance: 0,
     serviceMonths: 33,
@@ -66,7 +68,8 @@ const employers = [
   {
     id: "u051",
     company: "Cedar Retail India Ltd.",
-    dates: "01 July 2016 — 31 March 2019",
+    startDate: "2016-07-01",
+    endDate: "2019-03-31",
     memberId: "KN/BN/0004821/004",
     balance: 47820,
     serviceMonths: 33,
@@ -84,7 +87,8 @@ const employers = [
   {
     id: "u029",
     company: "BluePeak Logistics Pvt. Ltd.",
-    dates: "01 January 2014 — 30 June 2016",
+    startDate: "2014-01-01",
+    endDate: "2016-06-30",
     memberId: "KN/BN/0004821/002",
     balance: 58320,
     serviceMonths: 30,
@@ -187,6 +191,13 @@ const serviceDuration = (months, t, formatNumber) => {
     });
   return `${unit("year", years)} ${unit("month", remainingMonths)}`;
 };
+const employmentDates = (employer, t, formatDate) =>
+  t("employment.dateRange", {
+    start: formatDate(`${employer.startDate}T00:00:00`),
+    end: employer.endDate
+      ? formatDate(`${employer.endDate}T00:00:00`)
+      : t("employment.present"),
+  });
 const parseEnglishDate = (value) =>
   new Date(value.replace("Present", new Date().toISOString()));
 
@@ -993,8 +1004,8 @@ function StatusDetailsModal({ request, employer, onClose }) {
   );
 }
 
-function EmployerCard({ employer, request, onSelect }) {
-  const { t, formatAmount } = useLanguage();
+export function EmployerCard({ employer, request, onSelect }) {
+  const { t, formatAmount, formatDate } = useLanguage();
   const state = request ? requestState(request) : null;
   return (
     <article className="employer employer-compact">
@@ -1004,10 +1015,11 @@ function EmployerCard({ employer, request, onSelect }) {
         onClick={onSelect}
       >
         <span className="employer-company">
-          <span className="avatar">{employer.company[0]}</span>
           <span className="employer-company-copy">
             <strong>{employer.company}</strong>
-            <small className="employment-dates">{employer.dates}</small>
+            <small className="employment-dates">
+              {employmentDates(employer, t, formatDate)}
+            </small>
             <small className="row-service">
               {t("employment.totalService", {
                 duration: serviceDuration(
@@ -1017,6 +1029,9 @@ function EmployerCard({ employer, request, onSelect }) {
                 ),
               })}
             </small>
+          </span>
+          <span className="avatar" aria-hidden="true">
+            {employer.company[0]}
           </span>
         </span>
         <span className="employer-balance">
@@ -1029,7 +1044,7 @@ function EmployerCard({ employer, request, onSelect }) {
         <span className="employer-card-end">
           {state && (
             <span className={`request-status ${state.tone}`}>
-              {state.label}
+              {t(state.labelKey)}
             </span>
           )}
           <span className="view-employment">
@@ -1288,7 +1303,7 @@ function EmploymentDetails({
           <div>
             <p className="eyebrow">{t("employment.heading")}</p>
             <h1>{employer.company}</h1>
-            <p>{employer.dates}</p>
+            <p>{employmentDates(employer, t, formatDate)}</p>
             <strong>
               {t("common.memberId")}: {employer.memberId}
             </strong>
