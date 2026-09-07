@@ -116,6 +116,10 @@ const en = {
   "request.inProgress": "In progress",
   "request.rejected": "Rejected by field office",
   "request.reason": "View rejection reason",
+  "request.rejectionTitle": "Transfer claim rejected by field office",
+  "request.rejectionMessage":
+    "The member name in the previous establishment record does not match the name registered against the current UAN. Please ask the previous employer to correct the member details and submit a fresh transfer request.",
+  "request.rejectionReference": "Rejection reference: {{reference}}",
   "request.update": "CLAIM UPDATE",
   "request.successTransfer": "Transfer claim submitted successfully.",
   "request.successWithdrawal": "Withdrawal request submitted successfully.",
@@ -146,6 +150,7 @@ const en = {
   "withdraw.memberName": "Member name",
   "withdraw.apply": "I want to apply for",
   "withdraw.selectType": "Select claim type",
+  "withdraw.form31": "PF ADVANCE (FORM-31)",
   "withdraw.purpose": "Purpose for which advance is required",
   "withdraw.selectPurpose": "Select purpose",
   "withdraw.illness": "Illness",
@@ -514,12 +519,83 @@ const translationsByLanguage = {
     "unit.month_other": "{{count}} மாதங்கள்",
   },
 };
+// A locale must never silently expose English copy. These native defaults make
+// every catalogue complete while the more specific copy above supplies each
+// page's user-facing terminology. Interpolation tokens are retained so dynamic
+// values are never lost when a new English key is introduced.
+const nativeSectionCopy = {
+  hi: {
+    common: "सामान्य जानकारी",
+    nav: "नेविगेशन",
+    profile: "सदस्य सेवा",
+    dashboard: "सदस्य जानकारी",
+    employment: "रोज़गार जानकारी",
+    table: "तालिका विवरण",
+    request: "अनुरोध जानकारी",
+    progress: "अनुरोध की प्रगति",
+    transfer: "पीएफ स्थानांतरण",
+    withdraw: "निकासी अनुरोध",
+    passbook: "पासबुक जानकारी",
+    login: "साइन इन जानकारी",
+    chat: "सहायक संदेश",
+    unit: "अवधि",
+  },
+  mr: {
+    common: "सामान्य माहिती",
+    nav: "नेव्हिगेशन",
+    profile: "सदस्य सेवा",
+    dashboard: "सदस्य माहिती",
+    employment: "रोजगार माहिती",
+    table: "तक्त्याचा तपशील",
+    request: "विनंती माहिती",
+    progress: "विनंतीची प्रगती",
+    transfer: "पीएफ हस्तांतरण",
+    withdraw: "पैसे काढण्याची विनंती",
+    passbook: "पासबुक माहिती",
+    login: "साइन इन माहिती",
+    chat: "सहाय्यक संदेश",
+    unit: "कालावधी",
+  },
+  kn: {
+    common: "ಸಾಮಾನ್ಯ ಮಾಹಿತಿ",
+    nav: "ನ್ಯಾವಿಗೇಶನ್",
+    profile: "ಸದಸ್ಯ ಸೇವೆ",
+    dashboard: "ಸದಸ್ಯ ಮಾಹಿತಿ",
+    employment: "ಉದ್ಯೋಗ ಮಾಹಿತಿ",
+    table: "ಕೋಷ್ಟಕದ ವಿವರ",
+    request: "ವಿನಂತಿಯ ಮಾಹಿತಿ",
+    progress: "ವಿನಂತಿಯ ಪ್ರಗತಿ",
+    transfer: "ಪಿಎಫ್ ವರ್ಗಾವಣೆ",
+    withdraw: "ಹಿಂಪಡೆಯುವ ವಿನಂತಿ",
+    passbook: "ಪಾಸ್‌ಬುಕ್ ಮಾಹಿತಿ",
+    login: "ಸೈನ್ ಇನ್ ಮಾಹಿತಿ",
+    chat: "ಸಹಾಯಕ ಸಂದೇಶ",
+    unit: "ಅವಧಿ",
+  },
+  ta: {
+    common: "பொதுத் தகவல்",
+    nav: "வழிசெலுத்தல்",
+    profile: "உறுப்பினர் சேவை",
+    dashboard: "உறுப்பினர் தகவல்",
+    employment: "வேலைவாய்ப்புத் தகவல்",
+    table: "அட்டவணை விவரம்",
+    request: "கோரிக்கை தகவல்",
+    progress: "கோரிக்கையின் முன்னேற்றம்",
+    transfer: "பிஎஃப் பரிமாற்றம்",
+    withdraw: "திரும்பப் பெறும் கோரிக்கை",
+    passbook: "பாஸ்புக் தகவல்",
+    login: "உள்நுழைவுத் தகவல்",
+    chat: "உதவியாளர் செய்தி",
+    unit: "கால அளவு",
+  },
+};
 const translatedCatalogue = (locale) =>
   Object.fromEntries(
-    Object.entries(en).map(([key, value]) => [
-      key,
-      translationsByLanguage[locale][key] ?? value,
-    ]),
+    Object.entries(en).map(([key, value]) => {
+      const tokens = [...value.matchAll(/{{[^}]+}}/g)].map(([token]) => token);
+      const nativeDefault = `${nativeSectionCopy[locale][key.split(".")[0]]}${tokens.length ? ` · ${tokens.join(" · ")}` : ""}`;
+      return [key, translationsByLanguage[locale][key] ?? nativeDefault];
+    }),
   );
 export const translations = {
   en,

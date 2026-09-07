@@ -36,16 +36,7 @@ export function interpolate(template, variables = {}) {
 }
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(initialLanguage);
-  const setLanguage = (value) => {
-    const next = resolveLanguage(value);
-    document.documentElement.lang = next;
-    try {
-      globalThis.localStorage?.setItem(LANGUAGE_STORAGE_KEY, next);
-    } catch {
-      /* preference remains in memory */
-    }
-    setLanguageState(next);
-  };
+  const setLanguage = (value) => setLanguageState(resolveLanguage(value));
   useEffect(() => {
     document.documentElement.lang = language;
     try {

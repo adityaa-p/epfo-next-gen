@@ -105,26 +105,23 @@ const employers = [
         "11 Jul 2016",
         "15 Jul 2016",
       ],
-      rejectionTitle: "Transfer claim rejected by field office",
-      rejectionMessage:
-        "The member name in the previous establishment record does not match the name registered against the current UAN. Please ask the previous employer to correct the member details and submit a fresh transfer request.",
-      rejectionReference: "Rejection reference: FO/BN/2016/0715/284",
+      rejectionReference: "FO/BN/2016/0715/284",
     },
   },
 ];
 const steps = [
-  "Submitted",
-  "Pending at employer",
-  "Approved by employer",
-  "Pending at field office",
-  "Approved by field officer",
-  "Done",
+  "submitted",
+  "pendingEmployer",
+  "approvedEmployer",
+  "pendingOffice",
+  "approvedOfficer",
+  "done",
 ];
 const withdrawalSteps = [
-  "Submitted",
-  "Pending at field office",
-  "Approved by field office",
-  "Done",
+  "submitted",
+  "pendingOffice",
+  "approvedOffice",
+  "done",
 ];
 const memberName = "Ananya Kapoor";
 const uan = "1009 2847 3612";
@@ -406,10 +403,10 @@ function MobileNavigation({ currentView, onNavigate }) {
   return (
     <nav className="mobile-nav" aria-label={t("nav.mobile")}>
       {[
-        ["dashboard", "Home", "⌂"],
-        ["requests", "Requests", "◎"],
-        ["profile", "Profile", "○"],
-      ].map(([destination, label, icon]) => (
+        ["dashboard", "common.home", "⌂"],
+        ["requests", "common.requests", "◎"],
+        ["profile", "common.profile", "○"],
+      ].map(([destination, labelKey, icon]) => (
         <button
           key={destination}
           type="button"
@@ -418,7 +415,7 @@ function MobileNavigation({ currentView, onNavigate }) {
           onClick={() => onNavigate(destination)}
         >
           <span aria-hidden>{icon}</span>
-          {label}
+          {t(labelKey)}
         </button>
       ))}
     </nav>
@@ -430,7 +427,7 @@ function ClaimProgress({ claim }) {
 
   return (
     <>
-      <section className="claim" aria-label={`${claim.type} status`}>
+      <section className="claim" aria-label={t("request.claimStatus")}>
         <div className="claim-title">
           <span className="status-dot" /> {t("request.claimStatus")}
         </div>
@@ -450,9 +447,7 @@ function ClaimProgress({ claim }) {
                 <small>
                   {isRejected
                     ? t("request.rejected")
-                    : t(
-                        `progress.transfer.${["submitted", "pendingEmployer", "approvedEmployer", "pendingOffice", "approvedOfficer", "done"][i]}`,
-                      )}
+                    : t(`progress.transfer.${step}`)}
                 </small>
                 {claim.statusDates[i] && <time>{claim.statusDates[i]}</time>}
                 {isRejected && (
@@ -460,7 +455,7 @@ function ClaimProgress({ claim }) {
                     className="rejection-link"
                     onClick={() => setShowRejectionDetails(true)}
                   >
-                    View rejection reason
+                    {t("request.reason")}
                   </button>
                 )}
               </li>
@@ -493,12 +488,16 @@ function RejectionDetailsModal({ claim, onClose }) {
           ×
         </span>
         <p className="eyebrow">{t("request.update")}</p>
-        <h2 id="rejection-modal-title">{claim.rejectionTitle}</h2>
-        <p id="rejection-modal-message">{claim.rejectionMessage}</p>
-        <small>{claim.rejectionReference}</small>
+        <h2 id="rejection-modal-title">{t("request.rejectionTitle")}</h2>
+        <p id="rejection-modal-message">{t("request.rejectionMessage")}</p>
+        <small>
+          {t("request.rejectionReference", {
+            reference: claim.rejectionReference,
+          })}
+        </small>
         <div className="modal-actions">
           <button className="primary" onClick={onClose}>
-            Close
+            {t("common.close")}
           </button>
         </div>
       </section>
@@ -524,11 +523,7 @@ function WithdrawalProgress({ request }) {
             style={{ "--step": index }}
           >
             <span>{index <= request.progressStep ? "✓" : index + 1}</span>
-            <small>
-              {t(
-                `progress.withdrawal.${["submitted", "pendingOffice", "approvedOffice", "done"][index]}`,
-              )}
-            </small>
+            <small>{t(`progress.withdrawal.${step}`)}</small>
             {request.statusDates[index] && (
               <time>{request.statusDates[index]}</time>
             )}
@@ -615,14 +610,14 @@ function TransferClaimModal({
 
         <div className="modal-actions">
           <button className="secondary" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             className="primary"
             disabled={!targetEmployer}
             onClick={onContinue}
           >
-            Submit
+            {t("common.submit")}
           </button>
         </div>
       </section>
@@ -653,10 +648,10 @@ function ConfirmationModal({ sourceEmployer, targetEmployer, onNo, onYes }) {
         </p>
         <div className="modal-actions confirmation-actions">
           <button className="secondary" onClick={onNo}>
-            No
+            {t("common.no")}
           </button>
           <button className="primary" onClick={onYes}>
-            Yes
+            {t("common.yes")}
           </button>
         </div>
       </section>
@@ -722,7 +717,9 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
               }
             >
               <option value="">{t("withdraw.selectType")}</option>
-              <option value="PF ADVANCE (FORM-31)">PF ADVANCE (FORM-31)</option>
+              <option value="PF ADVANCE (FORM-31)">
+                {t("withdraw.form31")}
+              </option>
             </select>
           </label>
 
@@ -809,14 +806,14 @@ function WithdrawalModal({ employer, form, onCancel, onChange, onContinue }) {
 
         <div className="modal-actions">
           <button className="secondary" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             className="primary"
             disabled={!canSubmit}
             onClick={onContinue}
           >
-            Submit
+            {t("common.submit")}
           </button>
         </div>
       </section>
@@ -847,10 +844,10 @@ function WithdrawalConfirmationModal({ form, onNo, onYes }) {
         </p>
         <div className="modal-actions confirmation-actions">
           <button className="secondary" onClick={onNo}>
-            No
+            {t("common.no")}
           </button>
           <button className="primary" onClick={onYes}>
-            Yes
+            {t("common.yes")}
           </button>
         </div>
       </section>

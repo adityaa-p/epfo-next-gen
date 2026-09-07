@@ -37,9 +37,22 @@ const pages = {
 
 test("every locale has exactly the English key set", () => {
   assert.deepEqual(supportedLanguages, ["en", "hi", "mr", "kn", "ta"]);
-  const keys = Object.keys(translations.en).sort();
-  for (const locale of supportedLanguages)
-    assert.deepEqual(Object.keys(translations[locale]).sort(), keys);
+  const walk = (value, path = "") =>
+    Object.entries(value).flatMap(([key, child]) => {
+      const childPath = path ? `${path}.${key}` : key;
+      return child && typeof child === "object"
+        ? walk(child, childPath)
+        : [[childPath, child]];
+    });
+  const englishKeys = walk(translations.en)
+    .map(([key]) => key)
+    .sort();
+  for (const locale of supportedLanguages) {
+    const entries = walk(translations[locale]);
+    assert.deepEqual(entries.map(([key]) => key).sort(), englishKeys, locale);
+    for (const [key, value] of entries)
+      assert.ok(typeof value === "string" && value.trim(), `${locale}.${key}`);
+  }
 });
 
 test("language choices use native names only", () => {
@@ -61,12 +74,18 @@ test("catalogue never fabricates translations by appending a language name", () 
   }
 });
 
-test("every page has representative translations in all five locales", () => {
+test("every page switches through all locales without retaining representative English copy", () => {
   for (const keys of Object.values(pages)) {
     for (const key of keys) {
       assert.ok(app.includes(`t("${key}")`) || app.includes(`t("${key}",`));
       for (const locale of supportedLanguages)
         assert.equal(typeof translations[locale][key], "string");
+      for (const locale of supportedLanguages.slice(1))
+        assert.notEqual(
+          translations[locale][key],
+          translations.en[key],
+          `${locale}.${key}`,
+        );
     }
   }
   for (const locale of supportedLanguages.slice(1)) {
@@ -124,7 +143,8 @@ test("locale-specific numbers, dates, and service units are wired", () => {
 test("preference persists only a locale code and restores safely", () => {
   assert.ok(provider.includes('LANGUAGE_STORAGE_KEY = "epfo-one-language"'));
   assert.match(provider, /getItem\(LANGUAGE_STORAGE_KEY\)/);
-  assert.match(provider, /setItem\(LANGUAGE_STORAGE_KEY, next\)/);
+  assert.match(provider, /setItem\(LANGUAGE_STORAGE_KEY, language\)/);
+  assert.match(provider, /setLanguageState\(resolveLanguage\(value\)\)/);
   assert.match(provider, /document\.documentElement\.lang = language/);
 });
 
