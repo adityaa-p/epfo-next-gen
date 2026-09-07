@@ -1017,7 +1017,7 @@ function StatusDetailsModal({ request, employer, onClose }) {
   );
 }
 
-function EmployerCard({ employer, request, onSelect }) {
+export function EmployerCard({ employer, request, onSelect }) {
   const { t, formatAmount, formatDate } = useLanguage();
   const state = request ? requestState(request) : null;
   const localizedPeriod = employmentPeriod(employer, t, formatDate);
@@ -1057,7 +1057,7 @@ function EmployerCard({ employer, request, onSelect }) {
           <small>{t("employment.totalBalance")}</small>
           <strong>{formatAmount(employer.balance)}</strong>
           <small className="member">
-            {t("common.memberIdValue", { memberId: employer.memberId })}
+            {t("common.memberId")}: {employer.memberId}
           </small>
         </span>
         <span className="employer-card-end">
