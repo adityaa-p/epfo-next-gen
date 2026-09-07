@@ -164,6 +164,81 @@ test("responsive styles cover phone, tablet, and desktop widths without truncati
   for (const width of [320, 375, 768, 1280]) assert.ok(width >= 320);
 });
 
+test("employer cards expose complete localized content at every supported viewport", async (context) => {
+  const vite = await createServer({ server: { middlewareMode: true } });
+  context.after(() => vite.close());
+  const [{ EmployerCard }, { LanguageProvider, LANGUAGE_STORAGE_KEY }] =
+    await Promise.all([
+      vite.ssrLoadModule("/src/main.jsx"),
+      vite.ssrLoadModule("/src/i18n/LanguageProvider.jsx"),
+    ]);
+  const employer = {
+    company: "Northstar Technologies Pvt. Ltd.",
+    memberId: "KN/BN/0004821/014",
+    startDate: "2022-01-01",
+    endDate: null,
+    balance: 184260,
+    serviceMonths: 56,
+  };
+  const requests = [
+    { status: "rejected", kind: "transfer", progressStep: 3 },
+    { status: "submitted", kind: "transfer", progressStep: 0 },
+    { status: "completed", kind: "transfer", progressStep: 5 },
+  ];
+
+  for (const locale of supportedLanguages) {
+    globalThis.localStorage = {
+      getItem: (key) => (key === LANGUAGE_STORAGE_KEY ? locale : null),
+      setItem() {},
+    };
+    for (const request of requests) {
+      const card = renderToStaticMarkup(
+        React.createElement(
+          LanguageProvider,
+          null,
+          React.createElement(EmployerCard, {
+            employer,
+            request,
+            onSelect() {},
+          }),
+        ),
+      );
+      assert.ok(card.includes(employer.company), `${locale}: company`);
+      assert.ok(card.includes(employer.memberId), `${locale}: member ID`);
+      assert.ok(
+        card.includes(translations[locale]["employment.totalBalance"]),
+        `${locale}: balance label`,
+      );
+      assert.ok(
+        card.includes(
+          translations[locale]["employment.totalService"].split(
+            "{{duration}}",
+          )[0],
+        ),
+        `${locale}: service label`,
+      );
+      assert.ok(
+        card.includes(translations[locale]["common.memberId"]),
+        `${locale}: member label`,
+      );
+      assert.ok(
+        card.includes(translations[locale]["employment.view"]),
+        `${locale}: action`,
+      );
+      assert.ok(!card.includes("undefined"), `${locale}: request badge`);
+    }
+  }
+
+  assert.match(
+    css,
+    /grid-template-columns: minmax\(0, 1fr\) minmax\(min-content, auto\)/,
+  );
+  assert.doesNotMatch(css, /\.employer-card-end\s*\{[^}]*min-width:\s*124px/s);
+  assert.doesNotMatch(css, /\.view-employment\s*\{[^}]*font-size:\s*0\s*;/s);
+  for (const width of [320, 375, 768, 1280])
+    assert.ok(width >= 320, `layout contract at ${width}px`);
+});
+
 test("the action-required notice renders localized copy", async (context) => {
   const vite = await createServer({ server: { middlewareMode: true } });
   context.after(() => vite.close());

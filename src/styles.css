@@ -2806,6 +2806,8 @@ textarea {
   display: block;
   min-width: 0;
   flex: 1 1 auto;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .employer-company-copy strong,
@@ -2816,12 +2818,20 @@ textarea {
 }
 
 .employer-company-copy strong {
+  min-width: 0;
   max-width: 100%;
   color: #183f37;
   font-size: 0.95rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.employer-company-copy small,
+.employer-balance :is(small, strong) {
+  min-width: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .employer-balance {
@@ -2982,8 +2992,26 @@ textarea {
 }
 
 .employer-compact .employer-summary {
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(min-content, auto);
+  grid-template-areas:
+    "company end"
+    "balance end";
+  align-items: start;
   cursor: pointer;
+}
+
+.employer-compact .employer-company {
+  display: grid;
+  grid-area: company;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.employer-compact .employer-balance {
+  grid-area: balance;
+  min-width: 0;
+  text-align: left;
 }
 
 .employer-select {
@@ -2996,17 +3024,24 @@ textarea {
 
 .employer-card-end {
   display: flex;
-  min-width: 124px;
+  grid-area: end;
+  min-width: 0;
+  max-width: min(17rem, 38vw);
   align-items: flex-end;
   flex-direction: column;
   gap: 8px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .view-employment {
+  min-width: 0;
   color: #176c5d;
   font-size: 0.75rem;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .request-status {
@@ -3019,7 +3054,10 @@ textarea {
   color: #287051;
   font-size: 0.68rem;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 
 .request-status.progress {
@@ -3213,7 +3251,7 @@ textarea {
 
   .employer-compact .employer-summary {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(min-content, auto);
     grid-template-areas:
       "company end"
       "balance balance";
@@ -3224,21 +3262,25 @@ textarea {
     padding-right: 0;
   }
 
+  .employer-compact .avatar {
+    display: none;
+  }
+
   .employer-compact .employer-balance {
     grid-area: balance;
+    width: auto;
+    margin: 0;
+    padding-top: 10px;
   }
 
   .employer-card-end {
     grid-area: end;
     min-width: 0;
-  }
-
-  .view-employment {
-    font-size: 0;
+    max-width: min(9rem, 42vw);
   }
 
   .view-employment span {
-    font-size: 1rem;
+    font-size: inherit;
   }
 
   .request-summary {
