@@ -11,7 +11,7 @@ const employers = [
   {
     id: "u112",
     company: "Northstar Technologies Pvt. Ltd.",
-    dates: "01 January 2022 — Present",
+    startDate: "2022-01-01",
     memberId: "KN/BN/0004821/014",
     balance: 184260,
     serviceMonths: 56,
@@ -25,7 +25,8 @@ const employers = [
   {
     id: "u088",
     company: "Aster Cloud Services",
-    dates: "01 April 2019 — 31 December 2021",
+    startDate: "2019-04-01",
+    endDate: "2021-12-31",
     memberId: "KN/BN/0004821/009",
     balance: 0,
     serviceMonths: 33,
@@ -66,7 +67,8 @@ const employers = [
   {
     id: "u051",
     company: "Cedar Retail India Ltd.",
-    dates: "01 July 2016 — 31 March 2019",
+    startDate: "2016-07-01",
+    endDate: "2019-03-31",
     memberId: "KN/BN/0004821/004",
     balance: 47820,
     serviceMonths: 33,
@@ -84,7 +86,8 @@ const employers = [
   {
     id: "u029",
     company: "BluePeak Logistics Pvt. Ltd.",
-    dates: "01 January 2014 — 30 June 2016",
+    startDate: "2014-01-01",
+    endDate: "2016-06-30",
     memberId: "KN/BN/0004821/002",
     balance: 58320,
     serviceMonths: 30,
@@ -182,13 +185,23 @@ const serviceDuration = (months, t, formatNumber) => {
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
   const unit = (name, count) =>
-    t(`unit.${name}_${count === 1 ? "one" : "other"}`, {
-      count: formatNumber(count),
+    t(`unit.${name}`, {
+      count,
+      formattedCount: formatNumber(count),
     });
   return `${unit("year", years)} ${unit("month", remainingMonths)}`;
 };
-const parseEnglishDate = (value) =>
-  new Date(value.replace("Present", new Date().toISOString()));
+const parseEnglishDate = (value) => new Date(value);
+const parseIsoDate = (value) => new Date(`${value}T00:00:00`);
+const employmentPeriod = (employer, t, formatDate) =>
+  employer.endDate
+    ? t("employment.periodEnded", {
+        start: formatDate(parseIsoDate(employer.startDate)),
+        end: formatDate(parseIsoDate(employer.endDate)),
+      })
+    : t("employment.periodCurrent", {
+        start: formatDate(parseIsoDate(employer.startDate)),
+      });
 
 function viewFromHash() {
   const [name = "dashboard", id, option] = globalThis.location?.hash
@@ -911,7 +924,7 @@ function initialRequests() {
 }
 
 function RequestSummary({ request, employer, onTrack }) {
-  const { t } = useLanguage();
+  const { t, formatDate } = useLanguage();
   const state = requestState(request);
   return (
     <article className={`request-summary ${state.tone}`}>
@@ -923,15 +936,26 @@ function RequestSummary({ request, employer, onTrack }) {
         </small>
         <strong>{employer.company}</strong>
         <span>
-          {t("common.memberId")}: {employer.memberId}
+          {t("common.memberIdValue", { memberId: employer.memberId })}
         </span>
       </div>
       <div className="request-summary-status">
         <span className={`request-status ${state.tone}`}>
           {t(state.labelKey)}
         </span>
-        <time>{request.submittedAt}</time>
-        <button className="secondary" type="button" onClick={onTrack}>
+        <time dateTime={parseEnglishDate(request.submittedAt).toISOString()}>
+          {t("request.submittedOn", {
+            date: formatDate(parseEnglishDate(request.submittedAt)),
+          })}
+        </time>
+        <button
+          className="secondary"
+          type="button"
+          onClick={onTrack}
+          aria-label={t("request.trackForEmployer", {
+            employer: employer.company,
+          })}
+        >
           {t("request.track")}
         </button>
       </div>
@@ -994,20 +1018,27 @@ function StatusDetailsModal({ request, employer, onClose }) {
 }
 
 function EmployerCard({ employer, request, onSelect }) {
-  const { t, formatAmount } = useLanguage();
+  const { t, formatAmount, formatDate } = useLanguage();
   const state = request ? requestState(request) : null;
+  const localizedPeriod = employmentPeriod(employer, t, formatDate);
   return (
     <article className="employer employer-compact">
       <button
         className="employer-summary employer-select"
         type="button"
         onClick={onSelect}
+        aria-label={t("employment.open", {
+          employer: employer.company,
+          memberId: employer.memberId,
+        })}
       >
         <span className="employer-company">
-          <span className="avatar">{employer.company[0]}</span>
+          <span className="avatar" aria-hidden="true">
+            {employer.company[0]}
+          </span>
           <span className="employer-company-copy">
             <strong>{employer.company}</strong>
-            <small className="employment-dates">{employer.dates}</small>
+            <small className="employment-dates">{localizedPeriod}</small>
             <small className="row-service">
               {t("employment.totalService", {
                 duration: serviceDuration(
@@ -1023,13 +1054,13 @@ function EmployerCard({ employer, request, onSelect }) {
           <small>{t("employment.totalBalance")}</small>
           <strong>{formatAmount(employer.balance)}</strong>
           <small className="member">
-            {t("common.memberId")}: {employer.memberId}
+            {t("common.memberIdValue", { memberId: employer.memberId })}
           </small>
         </span>
         <span className="employer-card-end">
           {state && (
             <span className={`request-status ${state.tone}`}>
-              {state.label}
+              {t(state.labelKey)}
             </span>
           )}
           <span className="view-employment">
@@ -1122,7 +1153,8 @@ export function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
             </div>
             <span>
               {t("dashboard.accounts", {
-                count: formatAmount(employers.length),
+                count: employers.length,
+                formattedCount: formatAmount(employers.length),
               })}
             </span>
           </div>
@@ -1178,12 +1210,12 @@ export function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
           className="passbook"
           onClick={() => onPassbook(employers[0], true)}
         >
-          <span>▤</span>
+          <span aria-hidden="true">▤</span>
           <span>
             <strong>{t("dashboard.passbook")}</strong>
             <small>{t("dashboard.passbookHelp")}</small>
           </span>
-          <b>→</b>
+          <b aria-hidden="true">→</b>
         </button>
       </main>
     </>
@@ -1288,7 +1320,7 @@ function EmploymentDetails({
           <div>
             <p className="eyebrow">{t("employment.heading")}</p>
             <h1>{employer.company}</h1>
-            <p>{employer.dates}</p>
+            <p>{employmentPeriod(employer, t, formatDate)}</p>
             <strong>
               {t("common.memberId")}: {employer.memberId}
             </strong>

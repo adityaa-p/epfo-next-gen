@@ -13,6 +13,19 @@ const localeTags = {
   ta: "ta-IN",
 };
 const LanguageContext = createContext(null);
+const reportedMissingTranslations = new Set();
+
+export function reportMissingTranslation(language, key, hasFallback) {
+  if (!import.meta.env.DEV) return;
+  const warning = `${language}:${key}`;
+  if (reportedMissingTranslations.has(warning)) return;
+  reportedMissingTranslations.add(warning);
+  globalThis.console.warn(
+    hasFallback
+      ? `[i18n] Missing ${language} translation: ${key}`
+      : `[i18n] Missing translation key: ${key}`,
+  );
+}
 export function resolveLanguage(value) {
   const code = String(value || "")
     .toLowerCase()
@@ -53,19 +66,19 @@ export function LanguageProvider({ children }) {
       activeLocale: localeTags[language],
       locale: localeTags[language],
       t: (key, variables) => {
-        const selected = translations[language]?.[key];
-        const fallback = translations.en[key];
-        if (
-          import.meta.env.DEV &&
-          selected === undefined &&
-          fallback === undefined
-        ) {
-          globalThis.console.warn(`[i18n] Missing translation key: ${key}`);
-        } else if (import.meta.env.DEV && selected === undefined) {
-          globalThis.console.warn(
-            `[i18n] Missing ${language} translation: ${key}`,
+        const pluralSuffix =
+          typeof variables?.count === "number"
+            ? new Intl.PluralRules(localeTags[language]).select(variables.count)
+            : null;
+        const resolvedKey = pluralSuffix ? `${key}_${pluralSuffix}` : key;
+        const selected = translations[language]?.[resolvedKey];
+        const fallback = translations.en[resolvedKey];
+        if (selected === undefined)
+          reportMissingTranslation(
+            language,
+            resolvedKey,
+            fallback !== undefined,
           );
-        }
         return interpolate(selected ?? fallback ?? key, variables);
       },
       formatAmount: (amount) =>

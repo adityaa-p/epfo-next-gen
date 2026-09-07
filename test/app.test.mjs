@@ -130,10 +130,82 @@ test("placeholders and accessible names use translation keys", () => {
   assert.match(app, /aria-live="polite"/);
 });
 
+test("dashboard components only reference keys supplied by every locale", () => {
+  const componentRanges = [
+    ["const employmentPeriod", "function viewFromHash"],
+    ["function RequestSummary", "function StatusDetailsModal"],
+    ["function EmployerCard", "export function Dashboard"],
+    ["export function Dashboard", "function EmploymentDetails"],
+  ];
+  const componentSource = componentRanges
+    .map(([start, end]) => app.slice(app.indexOf(start), app.indexOf(end)))
+    .join("\n");
+  const referencedKeys = [
+    ...componentSource.matchAll(/\bt\(\s*["']([^"']+)["']/g),
+  ].map((match) => match[1]);
+
+  assert.ok(referencedKeys.length > 0);
+  for (const key of new Set(referencedKeys)) {
+    const dictionaryKeys =
+      key === "dashboard.accounts" ? [`${key}_one`, `${key}_other`] : [key];
+    for (const locale of supportedLanguages) {
+      for (const dictionaryKey of dictionaryKeys) {
+        assert.equal(
+          typeof translations[locale][dictionaryKey],
+          "string",
+          `${locale}.${dictionaryKey}`,
+        );
+      }
+    }
+  }
+
+  for (const key of [
+    "common.memberIdValue",
+    "request.submittedOn",
+    "request.trackForEmployer",
+    "employment.periodCurrent",
+    "employment.periodEnded",
+    "employment.open",
+    "dashboard.uanEnding",
+    "dashboard.totalService",
+    "dashboard.accounts",
+  ]) {
+    assert.ok(referencedKeys.includes(key), key);
+  }
+});
+
+test("service and account counts use plural-aware translation keys", () => {
+  for (const locale of supportedLanguages) {
+    for (const key of [
+      "dashboard.accounts_one",
+      "dashboard.accounts_other",
+      "unit.year_one",
+      "unit.year_other",
+      "unit.month_one",
+      "unit.month_other",
+    ]) {
+      assert.equal(
+        typeof translations[locale][key],
+        "string",
+        `${locale}.${key}`,
+      );
+    }
+  }
+  assert.match(provider, /new Intl\.PluralRules/);
+  assert.doesNotMatch(app, /count === 1/);
+});
+
+test("development translation misses are reported once", () => {
+  assert.match(provider, /export function reportMissingTranslation/);
+  assert.match(provider, /reportedMissingTranslations\.has/);
+  assert.match(provider, /console\.warn/);
+  assert.match(provider, /import\.meta\.env\.DEV/);
+});
+
 test("locale-specific numbers, dates, and service units are wired", () => {
   assert.match(provider, /new Intl\.NumberFormat\(localeTags\[language\]/);
   assert.match(provider, /new Intl\.DateTimeFormat\(localeTags\[language\]/);
-  assert.match(app, /unit\.\$\{name\}_/);
+  assert.match(app, /t\(`unit\.\$\{name\}`/);
   assert.equal(new Intl.NumberFormat("hi-IN").format(123456), "1,23,456");
   assert.match(
     new Intl.DateTimeFormat("ta-IN", { month: "long" }).format(
