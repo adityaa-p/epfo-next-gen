@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import translations, {
   supportedLanguages,
   languageNames,
@@ -90,55 +83,6 @@ export function LanguageProvider({ children }) {
     <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
-  );
-}
-export function LocalizedContent({ children }) {
-  const { language, t } = useLanguage();
-  const rootRef = useRef(null);
-  useEffect(() => {
-    if (language === "en" || !rootRef.current) return undefined;
-    const englishEntries = Object.entries(translations.en).sort(
-      (a, b) => b[1].length - a[1].length,
-    );
-    const translateNode = (root) => {
-      const walker = document.createTreeWalker(
-        root,
-        globalThis.NodeFilter.SHOW_TEXT,
-      );
-      const nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach((node) => {
-        const raw = node.nodeValue;
-        const trimmed = raw.trim();
-        const match = englishEntries.find(([, value]) => value === trimmed);
-        if (match) node.nodeValue = raw.replace(trimmed, t(match[0]));
-      });
-      root
-        .querySelectorAll?.("[aria-label], [placeholder], [title]")
-        .forEach((element) =>
-          ["aria-label", "placeholder", "title"].forEach((attribute) => {
-            const raw = element.getAttribute(attribute);
-            const match = englishEntries.find(([, value]) => value === raw);
-            if (match) element.setAttribute(attribute, t(match[0]));
-          }),
-        );
-    };
-    translateNode(rootRef.current);
-    const observer = new globalThis.MutationObserver((records) =>
-      records.forEach((record) =>
-        record.addedNodes.forEach((node) => {
-          if (node.nodeType === globalThis.Node.ELEMENT_NODE)
-            translateNode(node);
-        }),
-      ),
-    );
-    observer.observe(rootRef.current, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [language, t]);
-  return (
-    <div className="localized-root" ref={rootRef}>
-      {children}
-    </div>
   );
 }
 export function useLanguage() {
