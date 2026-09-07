@@ -30,7 +30,7 @@ function initialLanguage() {
 }
 export function interpolate(template, variables = {}) {
   return String(template).replace(
-    /{{\s*([^}]+)\s*}}/g,
+    /{{?\s*([^{}]+?)\s*}}?/g,
     (_, name) => variables[name.trim()] ?? "",
   );
 }
@@ -59,12 +59,24 @@ export function LanguageProvider({ children }) {
       language,
       setLanguage,
       languageNames,
+      activeLocale: localeTags[language],
       locale: localeTags[language],
-      t: (key, variables) =>
-        interpolate(
-          translations[language]?.[key] ?? translations.en[key] ?? key,
-          variables,
-        ),
+      t: (key, variables) => {
+        const selected = translations[language]?.[key];
+        const fallback = translations.en[key];
+        if (
+          import.meta.env.DEV &&
+          selected === undefined &&
+          fallback === undefined
+        ) {
+          globalThis.console.warn(`[i18n] Missing translation key: ${key}`);
+        } else if (import.meta.env.DEV && selected === undefined) {
+          globalThis.console.warn(
+            `[i18n] Missing ${language} translation: ${key}`,
+          );
+        }
+        return interpolate(selected ?? fallback ?? key, variables);
+      },
       formatAmount: (amount) =>
         new Intl.NumberFormat(localeTags[language], {
           maximumFractionDigits: 0,
