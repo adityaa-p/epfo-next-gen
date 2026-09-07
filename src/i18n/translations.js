@@ -57,11 +57,11 @@ const en = {
   "dashboard.combined": "Combined PF balance",
   "dashboard.totalService": "Total service · {{duration}}",
   "dashboard.uanEnding": "UAN ending •••• {{suffix}}",
-  "dashboard.todo": "THINGS TO DO",
-  "dashboard.attention": "A transfer needs your attention",
-  "dashboard.attentionHelp":
+  "dashboard.attention.eyebrow": "THINGS TO DO",
+  "dashboard.attention.transferTitle": "A transfer needs your attention",
+  "dashboard.attention.transferDescription":
     "Review the field office response before submitting the transfer again.",
-  "dashboard.review": "Review issue",
+  "dashboard.attention.reviewAction": "Review issue",
   "dashboard.employments": "Your employments",
   "dashboard.recentFirst": "Most recent employment first",
   "dashboard.accounts": "{{count}} accounts",
@@ -258,6 +258,12 @@ const translationsByLanguage = {
       "पहले अपना शेष देखें, फिर अधिक जानकारी के लिए रोज़गार चुनें।",
     "dashboard.overview": "सदस्य अवलोकन",
     "dashboard.combined": "कुल पीएफ शेष",
+    "dashboard.attention.eyebrow": "करने योग्य कार्य",
+    "dashboard.attention.transferTitle":
+      "एक स्थानांतरण पर आपका ध्यान आवश्यक है",
+    "dashboard.attention.transferDescription":
+      "स्थानांतरण दोबारा जमा करने से पहले क्षेत्रीय कार्यालय का उत्तर देखें।",
+    "dashboard.attention.reviewAction": "समस्या देखें",
     "dashboard.employments": "आपके रोज़गार",
     "dashboard.passbook": "पूरी पासबुक देखें",
     "employment.heading": "रोज़गार",
@@ -330,6 +336,12 @@ const translationsByLanguage = {
     "dashboard.intro": "प्रथम शिल्लक पहा, नंतर अधिक माहितीसाठी रोजगार निवडा.",
     "dashboard.overview": "सदस्य आढावा",
     "dashboard.combined": "एकत्रित पीएफ शिल्लक",
+    "dashboard.attention.eyebrow": "करावयाच्या गोष्टी",
+    "dashboard.attention.transferTitle":
+      "एका हस्तांतरणाकडे तुमचे लक्ष देणे आवश्यक आहे",
+    "dashboard.attention.transferDescription":
+      "हस्तांतरण पुन्हा सादर करण्यापूर्वी क्षेत्रीय कार्यालयाचा प्रतिसाद पहा.",
+    "dashboard.attention.reviewAction": "समस्या तपासा",
     "dashboard.employments": "तुमचे रोजगार",
     "dashboard.passbook": "संपूर्ण पासबुक पहा",
     "employment.heading": "रोजगार",
@@ -401,6 +413,11 @@ const translationsByLanguage = {
       "ಮೊದಲು ನಿಮ್ಮ ಬಾಕಿಯನ್ನು ನೋಡಿ, ಹೆಚ್ಚಿನ ವಿವರಕ್ಕೆ ಉದ್ಯೋಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
     "dashboard.overview": "ಸದಸ್ಯ ಅವಲೋಕನ",
     "dashboard.combined": "ಒಟ್ಟು ಪಿಎಫ್ ಬಾಕಿ",
+    "dashboard.attention.eyebrow": "ಮಾಡಬೇಕಾದ ಕೆಲಸಗಳು",
+    "dashboard.attention.transferTitle": "ಒಂದು ವರ್ಗಾವಣೆಗೆ ನಿಮ್ಮ ಗಮನ ಅಗತ್ಯವಿದೆ",
+    "dashboard.attention.transferDescription":
+      "ವರ್ಗಾವಣೆಯನ್ನು ಮತ್ತೆ ಸಲ್ಲಿಸುವ ಮೊದಲು ಕ್ಷೇತ್ರ ಕಚೇರಿಯ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "dashboard.attention.reviewAction": "ಸಮಸ್ಯೆಯನ್ನು ಪರಿಶೀಲಿಸಿ",
     "dashboard.employments": "ನಿಮ್ಮ ಉದ್ಯೋಗಗಳು",
     "dashboard.passbook": "ಸಂಪೂರ್ಣ ಪಾಸ್‌ಬುಕ್ ನೋಡಿ",
     "employment.heading": "ಉದ್ಯೋಗ",
@@ -472,6 +489,12 @@ const translationsByLanguage = {
       "முதலில் இருப்பைக் காணுங்கள்; பின்னர் விவரங்களுக்கு வேலையைத் தேர்ந்தெடுக்கவும்.",
     "dashboard.overview": "உறுப்பினர் மேலோட்டம்",
     "dashboard.combined": "மொத்த பிஎஃப் இருப்பு",
+    "dashboard.attention.eyebrow": "செய்ய வேண்டியவை",
+    "dashboard.attention.transferTitle":
+      "ஒரு பணமாற்றத்திற்கு உங்கள் கவனம் தேவை",
+    "dashboard.attention.transferDescription":
+      "பணமாற்றத்தை மீண்டும் சமர்ப்பிக்கும் முன் கள அலுவலகத்தின் பதிலைப் பாருங்கள்.",
+    "dashboard.attention.reviewAction": "சிக்கலைப் பாருங்கள்",
     "dashboard.employments": "உங்கள் வேலைகள்",
     "dashboard.passbook": "முழு பாஸ்புக்கைக் காண்க",
     "employment.heading": "வேலை",

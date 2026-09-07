@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createServer } from "vite";
 import {
   languageNames,
   supportedLanguages,
@@ -159,4 +162,53 @@ test("responsive styles cover phone, tablet, and desktop widths without truncati
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /overflow-wrap: anywhere/);
   for (const width of [320, 375, 768, 1280]) assert.ok(width >= 320);
+});
+
+test("the action-required notice renders localized copy", async (context) => {
+  const vite = await createServer({ server: { middlewareMode: true } });
+  context.after(() => vite.close());
+  const [{ Dashboard }, { LanguageProvider, LANGUAGE_STORAGE_KEY }] =
+    await Promise.all([
+      vite.ssrLoadModule("/src/main.jsx"),
+      vite.ssrLoadModule("/src/i18n/LanguageProvider.jsx"),
+    ]);
+  const rejectedRequest = {
+    id: "transfer-u029",
+    employerId: "u029",
+    kind: "transfer",
+    status: "rejected",
+    submittedAt: "04 Jul 2016",
+  };
+
+  for (const locale of ["hi", "mr", "kn", "ta"]) {
+    globalThis.localStorage = {
+      getItem: (key) => (key === LANGUAGE_STORAGE_KEY ? locale : null),
+      setItem() {},
+    };
+    const noticePage = renderToStaticMarkup(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(Dashboard, {
+          requests: [rejectedRequest],
+          onLogout() {},
+          onNavigate() {},
+          onPassbook() {},
+        }),
+      ),
+    );
+
+    assert.ok(
+      noticePage.includes(
+        translations[locale]["dashboard.attention.transferTitle"],
+      ),
+    );
+    assert.ok(
+      noticePage.includes(
+        translations[locale]["dashboard.attention.reviewAction"],
+      ),
+    );
+    assert.ok(!noticePage.includes("A transfer needs your attention"));
+    assert.ok(!noticePage.includes(">Review issue<"));
+  }
 });

@@ -1041,7 +1041,7 @@ function EmployerCard({ employer, request, onSelect }) {
   );
 }
 
-function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
+export function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
   const { t, formatAmount } = useLanguage();
   const combinedBalance = employers.reduce(
     (sum, employer) => sum + employer.balance,
@@ -1096,9 +1096,11 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
             aria-labelledby="things-to-do-title"
           >
             <div>
-              <p className="eyebrow">{t("dashboard.todo")}</p>
-              <h2 id="things-to-do-title">{t("dashboard.attention")}</h2>
-              <p>{t("dashboard.attentionHelp")}</p>
+              <p className="eyebrow">{t("dashboard.attention.eyebrow")}</p>
+              <h2 id="things-to-do-title">
+                {t("dashboard.attention.transferTitle")}
+              </h2>
+              <p>{t("dashboard.attention.transferDescription")}</p>
             </div>
             <button
               className="primary"
@@ -1107,7 +1109,7 @@ function Dashboard({ requests, onLogout, onNavigate, onPassbook }) {
                 onNavigate("requests", { requestId: actionRequest.id })
               }
             >
-              Review issue
+              {t("dashboard.attention.reviewAction")}
             </button>
           </section>
         )}
@@ -2109,11 +2111,14 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(
-  <LanguageProvider>
-    <App />
-  </LanguageProvider>,
-);
+const rootElement = globalThis.document?.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>,
+  );
+}
 
 // Translation catalogue source copy retained for regression discovery:
 // Transfer claim submitted successfully. Withdrawal request submitted successfully.
