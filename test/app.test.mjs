@@ -308,8 +308,9 @@ test("employer cards expose complete localized content at every supported viewpo
 
   assert.match(
     css,
-    /grid-template-columns: minmax\(0, 1fr\) minmax\(min-content, auto\)/,
+    /grid-template-columns:[^;]+minmax\(9rem, max-content\)[^;]+;/,
   );
+  assert.match(css, /grid-template-areas: "company balance end"/);
   assert.doesNotMatch(css, /\.employer-card-end\s*\{[^}]*min-width:\s*124px/s);
   assert.doesNotMatch(css, /\.view-employment\s*\{[^}]*font-size:\s*0\s*;/s);
   for (const width of [320, 375, 768, 1280])

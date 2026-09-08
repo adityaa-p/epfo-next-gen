@@ -2993,11 +2993,12 @@ textarea {
 
 .employer-compact .employer-summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(min-content, auto);
-  grid-template-areas:
-    "company end"
-    "balance end";
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(9rem, max-content) minmax(
+      min-content,
+      auto
+    );
+  grid-template-areas: "company balance end";
+  align-items: center;
   cursor: pointer;
 }
 
@@ -3015,7 +3016,7 @@ textarea {
 .employer-compact .employer-balance {
   grid-area: balance;
   min-width: 0;
-  text-align: left;
+  text-align: right;
 }
 
 .employer-select {
@@ -3258,7 +3259,7 @@ textarea {
     grid-template-columns: minmax(0, 1fr) minmax(min-content, auto);
     grid-template-areas:
       "company end"
-      "balance balance";
+      "company balance";
   }
 
   .employer-compact .employer-company {
@@ -3275,6 +3276,7 @@ textarea {
     width: auto;
     margin: 0;
     padding-top: 10px;
+    text-align: right;
   }
 
   .employer-card-end {
