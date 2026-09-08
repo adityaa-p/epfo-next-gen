@@ -297,6 +297,11 @@ test("employer cards expose complete localized content at every supported viewpo
         card.includes(translations[locale]["employment.view"]),
         `${locale}: action`,
       );
+      assert.equal(
+        card.match(/class="avatar"/g)?.length,
+        1,
+        `${locale}: one company logo`,
+      );
       assert.ok(!card.includes("undefined"), `${locale}: request badge`);
     }
   }
