@@ -27,6 +27,14 @@ jobs:
         with:
           # Build the exact revision that triggered this deployment.
           ref: ${{ github.sha }}
+          # Remove ignored build and dependency output left by a reused workspace.
+          clean: true
+
+      - name: Show tested revision
+        run: |
+          git rev-parse HEAD
+          git status --short
+          find src test -maxdepth 3 -type f -print
 
       - name: Set up Node
         uses: actions/setup-node@v4

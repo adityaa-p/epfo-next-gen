@@ -233,6 +233,8 @@ test("responsive styles cover phone, tablet, and desktop widths without truncati
   assert.match(css, /@media \(max-width: 360px\)/);
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /overflow-wrap: anywhere/);
+  assert.match(app, /<span className="phone-prefix">\+91<\/span>/);
+  assert.match(css, /\.phone-prefix\s*\{[^}]*white-space: nowrap/s);
   for (const width of [320, 375, 768, 1280]) assert.ok(width >= 320);
 });
 
@@ -264,6 +266,12 @@ test("employer cards expose complete localized content at every supported viewpo
       setItem() {},
     };
     for (const request of requests) {
+      const expectedTone =
+        request.status === "submitted"
+          ? "progress"
+          : request.status === "completed"
+            ? "complete"
+            : request.status;
       const card = renderToStaticMarkup(
         React.createElement(
           LanguageProvider,
@@ -297,14 +305,25 @@ test("employer cards expose complete localized content at every supported viewpo
         card.includes(translations[locale]["employment.view"]),
         `${locale}: action`,
       );
+      assert.equal(
+        card.match(/class="avatar"/g)?.length,
+        1,
+        `${locale}: one company logo`,
+      );
+      assert.ok(
+        card.includes(`request-status request-status-${expectedTone}`),
+        `${locale}: namespaced request status`,
+      );
+      assert.doesNotMatch(card, /class="request-status progress"/);
       assert.ok(!card.includes("undefined"), `${locale}: request badge`);
     }
   }
 
   assert.match(
     css,
-    /grid-template-columns: minmax\(0, 1fr\) minmax\(min-content, auto\)/,
+    /grid-template-columns:[^;]+minmax\(9rem, max-content\)[^;]+;/,
   );
+  assert.match(css, /grid-template-areas: "company balance end"/);
   assert.doesNotMatch(css, /\.employer-card-end\s*\{[^}]*min-width:\s*124px/s);
   assert.doesNotMatch(css, /\.view-employment\s*\{[^}]*font-size:\s*0\s*;/s);
   for (const width of [320, 375, 768, 1280])
