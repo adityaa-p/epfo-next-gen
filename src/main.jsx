@@ -1049,9 +1049,6 @@ export function EmployerCard({ employer, request, onSelect }) {
               })}
             </small>
           </span>
-          <span className="avatar" aria-hidden="true">
-            {employer.company[0]}
-          </span>
         </span>
         <span className="employer-balance">
           <small>{t("employment.totalBalance")}</small>

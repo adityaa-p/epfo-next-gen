@@ -3004,8 +3004,12 @@ textarea {
 .employer-compact .employer-company {
   display: grid;
   grid-area: company;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
+}
+
+.employer-compact .employer-company-copy {
+  text-align: left;
 }
 
 .employer-compact .employer-balance {
