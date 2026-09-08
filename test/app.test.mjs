@@ -297,14 +297,20 @@ test("employer cards expose complete localized content at every supported viewpo
         card.includes(translations[locale]["employment.view"]),
         `${locale}: action`,
       );
+      assert.equal(
+        card.match(/class="avatar"/g)?.length,
+        1,
+        `${locale}: one company logo`,
+      );
       assert.ok(!card.includes("undefined"), `${locale}: request badge`);
     }
   }
 
   assert.match(
     css,
-    /grid-template-columns: minmax\(0, 1fr\) minmax\(min-content, auto\)/,
+    /grid-template-columns:[^;]+minmax\(9rem, max-content\)[^;]+;/,
   );
+  assert.match(css, /grid-template-areas: "company balance end"/);
   assert.doesNotMatch(css, /\.employer-card-end\s*\{[^}]*min-width:\s*124px/s);
   assert.doesNotMatch(css, /\.view-employment\s*\{[^}]*font-size:\s*0\s*;/s);
   for (const width of [320, 375, 768, 1280])
