@@ -264,6 +264,12 @@ test("employer cards expose complete localized content at every supported viewpo
       setItem() {},
     };
     for (const request of requests) {
+      const expectedTone =
+        request.status === "submitted"
+          ? "progress"
+          : request.status === "completed"
+            ? "complete"
+            : request.status;
       const card = renderToStaticMarkup(
         React.createElement(
           LanguageProvider,
@@ -302,6 +308,11 @@ test("employer cards expose complete localized content at every supported viewpo
         1,
         `${locale}: one company logo`,
       );
+      assert.ok(
+        card.includes(`request-status request-status-${expectedTone}`),
+        `${locale}: namespaced request status`,
+      );
+      assert.doesNotMatch(card, /class="request-status progress"/);
       assert.ok(!card.includes("undefined"), `${locale}: request badge`);
     }
   }

@@ -3065,12 +3065,12 @@ textarea {
   white-space: normal;
 }
 
-.request-status.progress {
+.request-status-progress {
   background: #fff3cf;
   color: #795c05;
 }
 
-.request-status.rejected {
+.request-status-rejected {
   background: #f9e5e2;
   color: #a5413a;
 }
@@ -3088,7 +3088,7 @@ textarea {
   padding: 15px 17px;
 }
 
-.request-summary.rejected {
+.request-summary-rejected {
   border-left: 4px solid #c94f45;
 }
 

@@ -927,7 +927,7 @@ function RequestSummary({ request, employer, onTrack }) {
   const { t, formatDate } = useLanguage();
   const state = requestState(request);
   return (
-    <article className={`request-summary ${state.tone}`}>
+    <article className={`request-summary request-summary-${state.tone}`}>
       <div>
         <small>
           {request.kind === "transfer"
@@ -940,7 +940,7 @@ function RequestSummary({ request, employer, onTrack }) {
         </span>
       </div>
       <div className="request-summary-status">
-        <span className={`request-status ${state.tone}`}>
+        <span className={`request-status request-status-${state.tone}`}>
           {t(state.labelKey)}
         </span>
         <time dateTime={parseEnglishDate(request.submittedAt).toISOString()}>
@@ -1059,7 +1059,7 @@ export function EmployerCard({ employer, request, onSelect }) {
         </span>
         <span className="employer-card-end">
           {state && (
-            <span className={`request-status ${state.tone}`}>
+            <span className={`request-status request-status-${state.tone}`}>
               {t(state.labelKey)}
             </span>
           )}
