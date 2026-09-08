@@ -1829,7 +1829,7 @@ function Login({ onVerify }) {
             <label>
               {t("login.mobile")}
               <div className="phone">
-                <span>+91</span>
+                <span className="phone-prefix">+91</span>
                 <input
                   autoFocus
                   inputMode="numeric"

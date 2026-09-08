@@ -233,6 +233,8 @@ test("responsive styles cover phone, tablet, and desktop widths without truncati
   assert.match(css, /@media \(max-width: 360px\)/);
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /overflow-wrap: anywhere/);
+  assert.match(app, /<span className="phone-prefix">\+91<\/span>/);
+  assert.match(css, /\.phone-prefix\s*\{[^}]*white-space: nowrap/s);
   for (const width of [320, 375, 768, 1280]) assert.ok(width >= 320);
 });
 
