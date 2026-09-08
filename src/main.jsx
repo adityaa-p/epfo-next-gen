@@ -927,7 +927,7 @@ function RequestSummary({ request, employer, onTrack }) {
   const { t, formatDate } = useLanguage();
   const state = requestState(request);
   return (
-    <article className={`request-summary ${state.tone}`}>
+    <article className={`request-summary request-summary-${state.tone}`}>
       <div>
         <small>
           {request.kind === "transfer"
@@ -940,7 +940,7 @@ function RequestSummary({ request, employer, onTrack }) {
         </span>
       </div>
       <div className="request-summary-status">
-        <span className={`request-status ${state.tone}`}>
+        <span className={`request-status request-status-${state.tone}`}>
           {t(state.labelKey)}
         </span>
         <time dateTime={parseEnglishDate(request.submittedAt).toISOString()}>
@@ -1017,7 +1017,7 @@ function StatusDetailsModal({ request, employer, onClose }) {
   );
 }
 
-function EmployerCard({ employer, request, onSelect }) {
+export function EmployerCard({ employer, request, onSelect }) {
   const { t, formatAmount, formatDate } = useLanguage();
   const state = request ? requestState(request) : null;
   const localizedPeriod = employmentPeriod(employer, t, formatDate);
@@ -1049,20 +1049,17 @@ function EmployerCard({ employer, request, onSelect }) {
               })}
             </small>
           </span>
-          <span className="avatar" aria-hidden="true">
-            {employer.company[0]}
-          </span>
         </span>
         <span className="employer-balance">
           <small>{t("employment.totalBalance")}</small>
           <strong>{formatAmount(employer.balance)}</strong>
           <small className="member">
-            {t("common.memberIdValue", { memberId: employer.memberId })}
+            {t("common.memberId")}: {employer.memberId}
           </small>
         </span>
         <span className="employer-card-end">
           {state && (
-            <span className={`request-status ${state.tone}`}>
+            <span className={`request-status request-status-${state.tone}`}>
               {t(state.labelKey)}
             </span>
           )}
